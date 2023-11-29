@@ -115,8 +115,9 @@ expression.dotplot <- function(data, predictions,g1,g2,confidence=F){
 
 #' \code{LABclassifier} helps in visualising the sample classification
 #'
-#' @param data A data.frame containing gene (rows) expression from the samples (columns)
-#' to be classified
+#' @param data A data.frame containing gene (gene symbols as rows) expression
+#' from the samples (sample IDs as columns) to be classified or a  vector
+#' containing gene expression named with gene SYMBOL
 #' @param LABClassif An object of class \code{LABclassifier} obtained with
 #' \code{make.LABclassifier} function. If NULL, the precomputed classifier
 #' is used (default);
