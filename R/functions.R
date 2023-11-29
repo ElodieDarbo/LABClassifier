@@ -159,9 +159,12 @@ LABclassifier <- function(data,LABClassif=NULL,raw.counts=F,plot=F){
     centroid.la <- LABClassif$centroid.la
   }
   sensory2secretory <- Luminal2Apocrine <- prediction.strict <- xend <- yend <- confidence <- NULL
+  message("Applying sensory/secretory splitting ...")
   pred.ss <- classify_splits(data,centroid.ss,"ss")
+  message("Applying Luminal/Apocrine splitting ...")
   pred.la <- classify_splits(data,centroid.la,"la")
 
+  message("Computing final predictions ...")
   final.pred <- ifelse(pred.ss$pred.ss=="secretory","Basal",pred.la$pred.la)
   final.pred.strict <- final.pred
   final.pred.strict[pred.ss$pred.ss.strict=="unclassified" | (pred.la$pred.la.strict=="unclassified" & pred.ss$pred.ss.strict=="sensory")] <- "unclassified"
@@ -169,6 +172,7 @@ LABclassifier <- function(data,LABClassif=NULL,raw.counts=F,plot=F){
   pred.final <- data.frame(sensory2secretory=pred.ss$sensory,Luminal2Apocrine=pred.la$Luminal,prediction=final.pred,prediction.strict=final.pred.strict,row.names=colnames(data))
   pred.final$prediction.strict <- factor(as.vector(pred.final$prediction.strict),levels=c("Luminal","Basal","MA","unclassified"))
 
+  message("Computing confidence ...")
   s2s <- cut(pred.final$sensory2secretory,breaks = c(0,0.75,0.9,1.1,1.25,2))
   levels(s2s) <- c("high","medium","low","medium","high")
   l2a <- cut(pred.final$Luminal2Apocrine,breaks = c(0,0.75,0.9,1.1,1.25,2))
@@ -179,6 +183,7 @@ LABclassifier <- function(data,LABClassif=NULL,raw.counts=F,plot=F){
   lab[lab=="high" & s2s=="medium"] <- "medium"
   pred.final$confidence <- lab
   if (plot){
+    message("Start plotting ...")
     thrs.lines <- data.frame(sensory2secretory=rep(0,3),xend=rep(1,3),Luminal2Apocrine=c(0.9,1,1.1),yend=c(0.9,1,1.1))
     g <- ggplot(pred.final,aes(x=sensory2secretory,y=Luminal2Apocrine)) + theme_bw() +
       lims(x=c(0,2),y=c(0,2)) +
