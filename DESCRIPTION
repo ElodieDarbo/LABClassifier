@@ -30,3 +30,7 @@ LazyData: true
 LazyDataCompression: xz
 URL: https://github.com/ElodieDarbo/LABClassifier
 BugReports: https://github.com/ElodieDarbo/LABClassifier/issues
+Suggests: 
+    knitr,
+    rmarkdown
+VignetteBuilder: knitr
