@@ -27,4 +27,6 @@ Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.2.3
 LazyData: true
-LazyDataCompression:xz
+LazyDataCompression: xz
+URL: https://github.com/ElodieDarbo/LABClassifier
+BugReports: https://github.com/ElodieDarbo/LABClassifier/issues
