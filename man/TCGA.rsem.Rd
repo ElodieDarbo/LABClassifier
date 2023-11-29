@@ -23,7 +23,6 @@ for tumor size >=20mm}
 TCGA.rsem
 }
 \description{
-A subset of data from the World Health Organization Global Tuberculosis
-Report ...
+Normalized expression data from TCGA BRCA samples
 }
 \keyword{datasets}

@@ -1,7 +1,5 @@
 #' Normalized expression data from TCGA BRCA samples
 #'
-#' A subset of data from the World Health Organization Global Tuberculosis
-#' Report ...
 #'
 #' @format ## `TCGA.rsem`
 #' A data frame with 48 genes (rows) and 674 samples (columns):
