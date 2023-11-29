@@ -35,7 +35,7 @@ classify_splits <- function(d2,L,opt=NULL) {
     n <- ncol(L$centroids)
     d2 <- t(d2)
     tdist <- as.matrix(cor(t(d2),method="spearman"))
-    tdist <- as.data.frame(matrix(1-c(tdist[1,2],tdist[1,3],ncol=2)))
+    tdist <- as.data.frame(matrix(1-c(tdist[1,2],tdist[1,3]),ncol=2))
   } else {
     N <- ncol(d2)
     #d2 <- t(scale(t(d2),scale=F))
@@ -94,7 +94,6 @@ expression.dotplot <- function(data, predictions,g1,g2,confidence=F){
   data <- data[order(data$prediction),]
   color.LAB <- c(Basal="red",unclassified="grey",Luminal="darkblue",MA="pink",high="red",medium="orange",low="grey")
   color.LAB<- color.LAB[names(color.LAB)%in%classes]
-
   g <- ggplot(data,aes(x=g1,y=g2)) + theme_bw() +
     labs(x=paste(g1,"expression"),y=paste(g2,"expression")) +
     scale_colour_manual(values=color.LAB) +
@@ -192,13 +191,17 @@ LABclassifier <- function(data,LABClassif=NULL,raw.counts=F,plot=F){
       labs(x="Sensory to Secretory score",y="Luminal to Apocrine score") + theme(aspect.ratio = 1,legend.position="top")
       g1 <- g + geom_point(aes(color=prediction.strict)) + scale_color_manual(values=c(Basal="red",Luminal="darkblue",MA="pink",unclassified="grey")) + geom_point(data=pred.final[pred.final$prediction.strict=="MA",],shape=1,color="purple")
       g9 <- g + geom_point(data=pred.final,aes(color=confidence)) + scale_color_manual(values=c(high="red",medium="orange",low="grey"))
-      g3 <- expression.dotplot(data, pred.final,"ESR1","FOXA1")
-      g10 <- expression.dotplot(data, pred.final,"ESR1","FOXA1",confidence=T)
-      g5 <- expression.dotplot(data, pred.final,"ESR1","AR")
-      g11 <- expression.dotplot(data, pred.final,"ESR1","AR",confidence=T)
-      g7 <- expression.dotplot(data, pred.final,"ESR1","ERBB2")
-      g12 <- expression.dotplot(data, pred.final,"ESR1","ERBB2",confidence=T)
-      multiplot(g9,g1,g10,g3,g11,g5,g12,g7,cols=4)
+      if (is.data.frame(data)){
+        g3 <- expression.dotplot(data, pred.final,"ESR1","FOXA1")
+        g10 <- expression.dotplot(data, pred.final,"ESR1","FOXA1",confidence=T)
+        g5 <- expression.dotplot(data, pred.final,"ESR1","AR")
+        g11 <- expression.dotplot(data, pred.final,"ESR1","AR",confidence=T)
+        g7 <- expression.dotplot(data, pred.final,"ESR1","ERBB2")
+        g12 <- expression.dotplot(data, pred.final,"ESR1","ERBB2",confidence=T)
+        multiplot(g9,g1,g10,g3,g11,g5,g12,g7,cols=4)
+      } else {
+        multiplot(g9,g1,cols = 2)
+      }
   }
   return(pred.final)
 }
