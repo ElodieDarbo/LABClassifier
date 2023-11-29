@@ -133,6 +133,10 @@ expression.dotplot <- function(data, predictions,g1,g2,confidence=F){
 #' \item{prediction}{Centroid association: Luminal, Basal, MA: Molecular Apocrine}
 #' \item{prediction.strict}{Centroid association with annotation of the samples
 #' too far from any centroid as unclassified}
+#' \item{confidence}{Summarizes the distance to centroids, it is just an indicator:
+#' low confidence : 0.9 > scores < 1.1 (unclassified samples in strict predictions)
+#' medium confidence : 0.75 > scores < 1.25
+#' high confidence : 0.75 < scores > 1.15}
 #' @export
 #' @examples
 #' data(TCGA.rsem)

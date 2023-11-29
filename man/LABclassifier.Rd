@@ -7,8 +7,9 @@
 LABclassifier(data, LABClassif = NULL, raw.counts = F, plot = F)
 }
 \arguments{
-\item{data}{A data.frame containing gene (rows) expression from the samples (columns)
-to be classified}
+\item{data}{A data.frame containing gene (gene symbols as rows) expression
+from the samples (sample IDs as columns) to be classified or a  vector
+containing gene expression named with gene SYMBOL}
 
 \item{LABClassif}{An object of class \code{LABclassifier} obtained with
 \code{make.LABclassifier} function. If NULL, the precomputed classifier
@@ -27,6 +28,10 @@ diagnostic plots. Default: FALSE}
 \item{prediction}{Centroid association: Luminal, Basal, MA: Molecular Apocrine}
 \item{prediction.strict}{Centroid association with annotation of the samples
 too far from any centroid as unclassified}
+\item{confidence}{Summarizes the distance to centroids, it is just an indicator:
+low confidence : 0.9 > scores < 1.1 (unclassified samples in strict predictions)
+medium confidence : 0.75 > scores < 1.25
+high confidence : 0.75 < scores > 1.15}
 }
 \description{
 \code{LABclassifier} helps in visualising the sample classification
