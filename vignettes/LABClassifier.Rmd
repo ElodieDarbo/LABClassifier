@@ -1,0 +1,49 @@
+---
+title: "LABClassifier"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{LABClassifier}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+This vignette is on building ...
+
+# Introduction
+
+This package is implemented to stratify patients undergoing Breast Cancer into three subtypes: Luminal, Molecular Apocrine (MA) and Basal. To this end, it uses gene expression (RNA-seq, micro-array, illumina beadchip) of genes being determinant for the sensory/secretory split and Luminal/Apocrine split. We base our hypothesis on cell origin, specialisation and tumorogenesis.
+
+The package proposes a main function 'LABClassifier' (Luminal-Apocrine-Basal Classifier) that returns a data.frame containing predictions for each patient. Note that the function can be used with a single sample.
+
+# Getting started
+
+Install the LABClassifier package
+
+``` r
+# install.packages("devtools")
+devtools::install_github("ElodieDarbo/LABClassifier")
+```
+
+Load the library. 
+
+```{r setup}
+library(LABClassifier)
+```
+
+# Run LABclassifier
+
+Attached to the package, you find a subset of RNA-seq data (RSEM) from TCGA BRCA samples: TCGA.rsem. 
+
+``` r
+data(TCGA.rsem)
+LABclassifier(TCGA.rsem,plot=TRUE)
+```
+
+
