@@ -29,9 +29,11 @@ diagnostic plots. Default: FALSE}
 \item{prediction.strict}{Centroid association with annotation of the samples
 too far from any centroid as unclassified}
 \item{confidence}{Summarizes the distance to centroids, it is just an indicator:
-low confidence : 0.9 > scores < 1.1 (unclassified samples in strict predictions)
-medium confidence : 0.75 > scores < 1.25
-high confidence : 0.75 < scores > 1.15}
+\itemize{
+\item{high confidence}{ : 0.75 < scores > 1.15}
+\item{medium confidence}{ : 0.75 > scores < 1.25}
+\item{low confidence{ : 0.9 > scores < 1.1 (unclassified samples in strict predictions)}
+}}}
 }
 \description{
 \code{LABclassifier} helps in visualising the sample classification

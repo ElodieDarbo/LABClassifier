@@ -134,9 +134,11 @@ expression.dotplot <- function(data, predictions,g1,g2,confidence=F){
 #' \item{prediction.strict}{Centroid association with annotation of the samples
 #' too far from any centroid as unclassified}
 #' \item{confidence}{Summarizes the distance to centroids, it is just an indicator:
-#' low confidence : 0.9 > scores < 1.1 (unclassified samples in strict predictions)
-#' medium confidence : 0.75 > scores < 1.25
-#' high confidence : 0.75 < scores > 1.15}
+#' \itemize{
+#' \item{high confidence}{ : 0.75 < scores > 1.15}
+#' \item{medium confidence}{ : 0.75 > scores < 1.25}
+#' \item{low confidence{ : 0.9 > scores < 1.1 (unclassified samples in strict predictions)}
+#' }}}
 #' @export
 #' @examples
 #' data(TCGA.rsem)
@@ -193,10 +195,10 @@ LABclassifier <- function(data,LABClassif=NULL,raw.counts=F,plot=F){
       lims(x=c(0,2),y=c(0,2)) +
       geom_vline(xintercept = c(0.9,1,1.1),linetype=c("dashed","solid","dashed"),size=rep(0.5,3),color=rep("darkgrey",3)) +
       geom_segment(data=thrs.lines,aes(xend=xend,yend=yend),linetype=c("dashed","solid","dashed"),size=0.5,color="darkgrey") +
-      labs(x="Sensory to Secretory score",y="Luminal to Apocrine score") + theme(aspect.ratio = 1,legend.position="top")
+      labs(x="Distance to sensory centroid",y="Distance to Luminal centroid") + theme(aspect.ratio = 1,legend.position="top")
       g1 <- g + geom_point(aes(color=prediction.strict)) + scale_color_manual(values=c(Basal="red",Luminal="darkblue",MA="pink",unclassified="grey")) + geom_point(data=pred.final[pred.final$prediction.strict=="MA",],shape=1,color="purple")
       g9 <- g + geom_point(data=pred.final,aes(color=confidence)) + scale_color_manual(values=c(high="red",medium="orange",low="grey"))
-      if (is.data.frame(data)){
+      if (!is.vector(data)){
         g3 <- expression.dotplot(data, pred.final,"ESR1","FOXA1")
         g10 <- expression.dotplot(data, pred.final,"ESR1","FOXA1",confidence=T)
         g5 <- expression.dotplot(data, pred.final,"ESR1","AR")
@@ -208,7 +210,7 @@ LABclassifier <- function(data,LABClassif=NULL,raw.counts=F,plot=F){
         multiplot(g9,g1,cols = 2)
       }
   }
-  return(pred.final)
+  return(invisible(pred.final))
 }
 
 

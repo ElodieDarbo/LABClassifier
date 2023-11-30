@@ -213,9 +213,7 @@ cit.dfAggregate  <-  function (data, partition, MARGIN = 2, fAggreg = mean.na){
 }
 
 computeCentroids <- function(annots,DF,col_interest) {
-  ## add smote
   stopifnot(length(which(colnames(annots)==col_interest))==1)
-  #stopifnot(length(which(annots[,col_interest] %in% c("hLMS","oLMS")))==nrow(annots))
   stopifnot(length(which(rownames(annots) %in% names(DF)))>0)
   cl <- rep(NA,ncol(DF))
   names(cl) <- names(DF)
