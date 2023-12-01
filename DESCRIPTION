@@ -5,7 +5,8 @@ Depends: R (>= 4.0),
          ggplot2,
          grDevices,
          graphics,
-         stats
+         stats,
+         genefu
 Imports: mixdist,
          themis
 Authors@R: 
