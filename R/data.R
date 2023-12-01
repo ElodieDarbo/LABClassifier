@@ -6,7 +6,7 @@
 #' \describe{
 #'   \item{genes}{Genes useful to classify samples with centroids.}
 #'   \item{samples}{Breast cancer samples from the TCGA consortium filtered
-#'   for tumor size >=20mm}
+#'   for tumor stage II and III}
 #'   \item{expression}{The values are RSEM normalized}
 #' }
 #' @source <https://tcga-xena-hub.s3.us-east-1.amazonaws.com/download/TCGA.BRCA.sampleMap%2FHiSeqV2.gz>
