@@ -11,7 +11,7 @@ A data frame with 48 genes (rows) and 674 samples (columns):
 \describe{
 \item{genes}{Genes useful to classify samples with centroids.}
 \item{samples}{Breast cancer samples from the TCGA consortium filtered
-for tumor size >=20mm}
+for tumor stage II and III}
 \item{expression}{The values are RSEM normalized}
 }
 }

@@ -4,7 +4,7 @@
 \alias{expression.dotplot}
 \title{\code{expression.dotplot} helps in visualising the sample classification}
 \usage{
-expression.dotplot(data, predictions, g1, g2, confidence = F)
+expression.dotplot(data, predictions, g1, g2, confidence = F, PAM50 = F)
 }
 \arguments{
 \item{data}{A data.frame containing gene (rows) expression from the samples (columns)
@@ -19,6 +19,8 @@ to be classified}
 
 \item{confidence}{If TRUE, the colors correspond to classification
 confidence rather than predicted classes;}
+
+\item{PAM50}{If TRUE, the colors correspond to PAM50 classification}
 }
 \value{
 \code{classify_splits} Returns a ggplot object

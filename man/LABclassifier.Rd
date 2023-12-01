@@ -4,7 +4,14 @@
 \alias{LABclassifier}
 \title{\code{LABclassifier} helps in visualising the sample classification}
 \usage{
-LABclassifier(data, LABClassif = NULL, raw.counts = F, plot = F)
+LABclassifier(
+  data,
+  LABClassif = NULL,
+  raw.counts = F,
+  id.type = "SYMBOL",
+  PAM50 = F,
+  plot = F
+)
 }
 \arguments{
 \item{data}{A data.frame containing gene (gene symbols as rows) expression
@@ -17,6 +24,12 @@ is used (default);}
 
 \item{raw.counts}{A logical. Set it to TRUE if you are using raw sequencing
 data, then they will be transformed in TPM. Default: FALSE;}
+
+\item{id.type}{A character string. Gene identifier type in the input matrix. Possible values are
+ensEMBL, entrezID, SYMBOL (default)}
+
+\item{PAM50}{A logical. Compute PAM50 classification using \code{molecular.subtyping}
+function from genefu package. If used, please cite the corresponding paper (See reference).}
 
 \item{plot}{A logical. Set it to TRUE to display classification
 diagnostic plots. Default: FALSE}
@@ -41,4 +54,9 @@ too far from any centroid as unclassified}
 \examples{
 data(TCGA.rsem)
 LABclassifier(TCGA.rsem,plot=TRUE)
+}
+\references{
+genefu:  Deena M.A. Gendoo et al. (2021). genefu: Computation of Gene
+Expression-Based Signatures in Breast Cancer. R package version 2.26.0.
+http://www.pmgenomics.ca/bhklab/software/genefu
 }
