@@ -52,15 +52,57 @@ classify_splits <- function(d2,L,opt=NULL) {
     pred <- ifelse(tdist$sensory <= 1,"sensory","secretory")
     tdist$pred.ss <- pred
     tdist$pred.ss.strict <- pred
-    tdist$pred.ss.strict[tdist$sensory>0.9 & tdist$sensory<1.1] <- "unclassified"
+    tdist$pred.ss.strict[tdist$sensory>=0.9 & tdist$sensory<=1.1] <- "unclassified"
   } else if (opt == "la"){
     pred <- ifelse(tdist$Luminal <= 1,"Luminal","MA")
     tdist$pred.la <- pred
     tdist$pred.la.strict <- pred
-    tdist$pred.la.strict[tdist$Luminal>0.9 & tdist$Luminal<1.1] <- "unclassified"
+    tdist$pred.la.strict[tdist$Luminal>=0.9 & tdist$Luminal<=1.1] <- "unclassified"
   }
   return(tdist)
 }
+
+#' \code{PAMgenefu} uses \code{molecular.subtyping} from genefu package.
+#' Please cite the corresponding paper (See reference).
+#' @param data A data.frame containing gene (gene symbols as rows) expression
+#' from the samples (sample IDs as columns) to be classified or a  vector
+#' containing gene expression named with gene SYMBOL
+#' @references
+#'
+#' genefu:  Deena M.A. Gendoo et al. (2021). genefu: Computation of Gene
+#' Expression-Based Signatures in Breast Cancer. R package version 2.26.0.
+#' http://www.pmgenomics.ca/bhklab/software/genefu
+#' @importFrom genefu molecular.subtyping
+#' @return \code{PAMgenefu} Returns a data.frame with 1 column
+#' \item{PAM50}{PAM50 classification: LumA and LumB (Luminal A and B), Basal, Her2.}
+
+
+PAMgenefu <- function(data) {
+  annots <- gene.length[gene.length$entrezid%in%pam50.robust$centroids.map$EntrezGene.ID,c("SYMBOL","entrezid")]
+  annots <- merge(annots, data, by.x = "SYMBOL",by.y=0)
+  annots <- unique(annots)
+  row.names(annots) <- annots$SYMBOL
+
+  colnames(annots) <- sub("SYMBOL","Gene.Symbol",colnames(annots))
+  dat <- annots[,-c(1:2),drop=F]
+  dat <- t(dat)
+
+  annots <- annots[,1:2]
+
+  # Subtype with PAM50
+  output <- molecular.subtyping(
+    sbt.model="pam50",
+    data=dat,
+    annot=annots,
+    do.mapping=FALSE)
+
+  pam50 <- output$subtype
+  pam50 <- data.frame(row.names=names(pam50),PAM50=as.character(pam50))
+
+  return(pam50)
+
+}
+
 
 #' \code{expression.dotplot} helps in visualising the sample classification
 #'
@@ -72,12 +114,13 @@ classify_splits <- function(d2,L,opt=NULL) {
 #' @param g2 A gene symbol to be visualized on y-axis;
 #' @param confidence If TRUE, the colors correspond to classification
 #' confidence rather than predicted classes;
+#' @param PAM50 If TRUE, the colors correspond to PAM50 classification
 #'
 #' @import ggplot2
 #' @return \code{classify_splits} Returns a ggplot object
 
 
-expression.dotplot <- function(data, predictions,g1,g2,confidence=F){
+expression.dotplot <- function(data, predictions,g1,g2,confidence=F,PAM50=F){
   prediction <- NULL
   colnames(data) <- gsub("-",".",colnames(data))
   classes <- c("Basal","Luminal","MA","unclassified")
@@ -85,14 +128,24 @@ expression.dotplot <- function(data, predictions,g1,g2,confidence=F){
   if (confidence){
     classes <- c("high","medium","low")
   }
+  if (PAM50){
+    classes <- c("Basal","LumA","LumB","Her2")
+    predictions <- predictions[predictions$PAM50%in%classes,]
+    predictions$PAM50 <- factor(as.vector(predictions$PAM50),levels=c("LumA","LumB","Basal","Her2"))
+    data <- data[,predictions$Row.names]
+  }
   data <- as.data.frame(t(data))
   data$patientID <- row.names(data)
   #data <- data[!grepl("^TCGA",data$patientID),]
   data <- data[,c("patientID",g1,g2)]
   colnames(data) <- c("patientID","g1","g2")
   data$prediction <- predictions$pred[match(data$patientID,row.names(predictions))]
+  if (PAM50){
+    data$prediction <- predictions$PAM50[match(data$patientID,row.names(predictions))]
+  }
   data <- data[order(data$prediction),]
-  color.LAB <- c(Basal="red",unclassified="grey",Luminal="darkblue",MA="pink",high="red",medium="orange",low="grey")
+  #scale_color_manual(values=c()) + geom_point(data=pred.final[pred.final$PAM50=="Her2",],shape=1,color="deeppink")
+  color.LAB <- c(LumA="darkblue",Her2="pink",LumB="lightblue",Basal="red",unclassified="grey",Luminal="darkblue",MA="pink",high="red",medium="orange",low="grey")
   color.LAB<- color.LAB[names(color.LAB)%in%classes]
   g <- ggplot(data,aes(x=g1,y=g2)) + theme_bw() +
     labs(x=paste(g1,"expression"),y=paste(g2,"expression")) +
@@ -107,7 +160,11 @@ expression.dotplot <- function(data, predictions,g1,g2,confidence=F){
   }
   else {
     g <- g + geom_point(aes(color=prediction))
-    g <- g + geom_point(data=data[data$prediction=="MA",],shape=1,color="mediumorchid")
+    if (PAM50){
+      g <- g + geom_point(data=data[data$prediction=="Her2",],shape=1,color="deeppink")
+    } else {
+      g <- g + geom_point(data=data[data$prediction=="MA",],shape=1,color="mediumorchid")
+    }
   }
 
   return(g)
@@ -123,9 +180,21 @@ expression.dotplot <- function(data, predictions,g1,g2,confidence=F){
 #' is used (default);
 #' @param raw.counts A logical. Set it to TRUE if you are using raw sequencing
 #' data, then they will be transformed in TPM. Default: FALSE;
+#' @param log2T A logical. If true, data are log2 transformed. Default: FALSE;
+#' @param id.type A character string. Gene identifier type in the input matrix. Possible values are
+#' ensEMBL, entrezID, SYMBOL (default)
+#' @param PAM50 A logical. Compute PAM50 classification using \code{molecular.subtyping}
+#' function from genefu package. If used, please cite the corresponding paper (See reference).
 #' @param plot A logical. Set it to TRUE to display classification
 #' diagnostic plots. Default: FALSE
+#' @param prefix A character string. If set, a directory Output is created in the
+#' working directory (if not exists), and the prediction result is saved in as a
+#' tabulated file. The filename is prefix_LAB_prefix.tab
+#' @references
 #'
+#' genefu:  Deena M.A. Gendoo et al. (2021). genefu: Computation of Gene
+#' Expression-Based Signatures in Breast Cancer. R package version 2.26.0.
+#' http://www.pmgenomics.ca/bhklab/software/genefu
 #' @import ggplot2
 #' @return \code{LABclassifier} Returns a data.frame with columns
 #' \item{sensory2secretory}{Distance to sensory centroid}
@@ -145,16 +214,67 @@ expression.dotplot <- function(data, predictions,g1,g2,confidence=F){
 #' LABclassifier(TCGA.rsem,plot=TRUE)
 
 
-LABclassifier <- function(data,LABClassif=NULL,raw.counts=F,plot=F){
+LABclassifier <- function(data,LABClassif=NULL,raw.counts=F,log2T=F,id.type="SYMBOL",PAM50=F,plot=F,prefix=NULL){
+  v <- F
+  if (is.vector(data)){
+    if (is.null(names(data))) stop("ERROR: You submitted a vector that is not named.")
+    data <- data.frame(row.names=names(data),sample=data)
+    v <- T
+    if (PAM50){
+      message("WARNING: PAM50 can't be applied on a simgle sample.")
+      PAM50 <- F
+    }
+  }
+  switch(id.type,
+         ensEMBL={
+           ensg <- row.names(data)
+           ensg <- sub("[.][0-9]+$","",ensg)
+           m1 <- match(ensg,gene.length$v86)
+           m2 <- match(ensg,gene.length$v75)
+           symbols1 <- gene.length$SYMBOL[m1]
+           symbols2 <- gene.length$SYMBOL[m2]
+           symbols1[is.na(symbols1)] <- symbols2[is.na(symbols1)]
+           data <- data[!is.na(symbols1),,drop=F]
+           symbols1 <- na.omit(symbols1)
+           dup <- duplicated(symbols1)
+           data <- data[!dup,,drop=F]
+           row.names(data) <- symbols1[!dup]
+           message("You have submitted ",length(ensg)," EnsEMBL genes.")
+           message("We found ",nrow(data)," corresponding gene symbols.")
+         },
+         entrezID={
+           id <- row.names(data)
+           m1 <- match(id,gene.length$entrezid)
+           m2 <- match(id,gene.length$entrez75)
+           symbols1 <- gene.length$SYMBOL[m1]
+           symbols2 <- gene.length$SYMBOL[m2]
+           symbols1[is.na(symbols1)] <- symbols2[is.na(symbols1)]
+           data <- data[!is.na(symbols1),,drop=F]
+           symbols1 <- na.omit(symbols1)
+           dup <- duplicated(symbols1)
+           data <- data[!dup,,drop=F]
+           row.names(data) <- symbols1[!dup]
+           message("You have submitted ",length(id)," ENTREZ genes.")
+           message("We found ",nrow(data)," corresponding gene symbols.")
+         },
+         SYMBOL={
+           # Do nothing
+         },
+         stop(paste(id.type, "not recognized"))
+  )
+  if (log2T){
+    data <- log2(data+1)
+  }
   if (raw.counts){
     message("Transforming RNA-seq raw counts into log2(TPM+1)")
     m <- match(gene.length$SYMBOL,row.names(data))
-    ldata <- data[na.omit(m),]
-    gene.length <- gene.length[!is.na(m),]
+    ldata <- data[na.omit(m),,drop=F]
+    gene.length <- gene.length[!is.na(m),,drop=F]
     ldata <- (ldata / (gene.length$effective_length+1))*1000
     TPM <- apply(ldata,2,function(x){
       x <- (x/sum(x))*10^6
     })
+    log2T <- F
     data <- log2(TPM+1)
   }
   if (!is.null(LABClassif)){
@@ -165,9 +285,28 @@ LABclassifier <- function(data,LABClassif=NULL,raw.counts=F,plot=F){
     centroid.la <- LABClassif$centroid.la
   }
   sensory2secretory <- Luminal2Apocrine <- prediction.strict <- xend <- yend <- confidence <- NULL
+
+  slipts.genes <- list(ss=row.names(centroid.ss$centroids),la=row.names(centroid.la$centroids))
+  slipts.genes.pc <- list(ss=sum(slipts.genes$ss%in%row.names(data))/length(slipts.genes$ss),la=sum(slipts.genes$la%in%row.names(data))/length(slipts.genes$la))
+  all.symbols <- row.names(data)
+  if (v){
+    g <- row.names(data)
+    data <- data$sample
+    names(data) <- g
+  }
+
   message("Applying sensory/secretory splitting ...")
+  if (slipts.genes.pc$ss!=1){
+    message("WARNING: ",paste(slipts.genes$ss[!slipts.genes$ss%in%all.symbols],collapse=", "), " (",round(1 - slipts.genes.pc$ss,2)*100,"%) ",
+            "are absent from your data.")
+  }
   pred.ss <- classify_splits(data,centroid.ss,"ss")
   message("Applying Luminal/Apocrine splitting ...")
+  if (slipts.genes.pc$la!=1){
+    message("WARNING: ",paste(slipts.genes$la[!slipts.genes$la%in%all.symbols],collapse=", "), " (",round(1 - slipts.genes.pc$la,2)*100,"%) ",
+            "are absent from your data.")
+  }
+
   pred.la <- classify_splits(data,centroid.la,"la")
 
   message("Computing final predictions ...")
@@ -188,6 +327,14 @@ LABclassifier <- function(data,LABClassif=NULL,raw.counts=F,plot=F){
   lab[lab!="low" & s2s=="low"] <- "low"
   lab[lab=="high" & s2s=="medium"] <- "medium"
   pred.final$confidence <- lab
+
+  if (PAM50){
+    message("Computing PAM50 classification")
+    pam50.pred <- PAMgenefu(data)
+    pred.final <- merge(pred.final,pam50.pred,by=0)
+    row.names(pred.final) <- pred.final$Row.names
+  }
+
   if (plot){
     message("Start plotting ...")
     thrs.lines <- data.frame(sensory2secretory=rep(0,3),xend=rep(1,3),Luminal2Apocrine=c(0.9,1,1.1),yend=c(0.9,1,1.1))
@@ -198,6 +345,9 @@ LABclassifier <- function(data,LABClassif=NULL,raw.counts=F,plot=F){
       labs(x="Distance to sensory centroid",y="Distance to Luminal centroid") + theme(aspect.ratio = 1,legend.position="top")
       g1 <- g + geom_point(aes(color=prediction.strict)) + scale_color_manual(values=c(Basal="red",Luminal="darkblue",MA="pink",unclassified="grey")) + geom_point(data=pred.final[pred.final$prediction.strict=="MA",],shape=1,color="purple")
       g9 <- g + geom_point(data=pred.final,aes(color=confidence)) + scale_color_manual(values=c(high="red",medium="orange",low="grey"))
+      if (PAM50){
+        gpam <- g + geom_point(data=pred.final,aes(color=PAM50)) + scale_color_manual(values=c(Basal="red",LumA="darkblue",Her2="pink",LumB="lightblue")) + geom_point(data=pred.final[pred.final$PAM50=="Her2",],shape=1,color="deeppink")
+      }
       if (!is.vector(data)){
         g3 <- expression.dotplot(data, pred.final,"ESR1","FOXA1")
         g10 <- expression.dotplot(data, pred.final,"ESR1","FOXA1",confidence=T)
@@ -205,10 +355,35 @@ LABclassifier <- function(data,LABClassif=NULL,raw.counts=F,plot=F){
         g11 <- expression.dotplot(data, pred.final,"ESR1","AR",confidence=T)
         g7 <- expression.dotplot(data, pred.final,"ESR1","ERBB2")
         g12 <- expression.dotplot(data, pred.final,"ESR1","ERBB2",confidence=T)
-        multiplot(g9,g1,g10,g3,g11,g5,g12,g7,cols=4)
+        if (PAM50){
+          gpam1 <- expression.dotplot(data, pred.final,"ESR1","FOXA1",PAM50=T)
+          gpam2 <- expression.dotplot(data, pred.final,"ESR1","AR",PAM50=T)
+          gpam3 <- expression.dotplot(data, pred.final,"ESR1","ERBB2",PAM50=T)
+          multiplot(g9,g1,gpam,g10,g3,gpam1,g11,g5,gpam2,g12,g7,gpam3,cols=4)
+        } else {
+          multiplot(g9,g1,g10,g3,g11,g5,g12,g7,cols=4)
+        }
       } else {
         multiplot(g9,g1,cols = 2)
       }
+  }
+  pred.final$Row.names <- NULL
+  if (!is.null(prefix)){
+    message("If not existing, creating a folder 'Output' in the working directory: ",getwd())
+    suppressWarnings(dir.create("./Output",recursive = T))
+    write.table(pred.final,paste0("./Output/",prefix,"_LAB_predictions.tab"),sep="\t",quote=F)
+    if (plot){
+      w <- 16
+      h <- 8
+      if (PAM50){
+        h <- 12
+      }
+      if (is.vector(data)){
+        h <- 4
+        w <- 8
+      }
+      export.plot(paste0("./Output/",prefix,"_LAB_predictions"),width=w,height=h)
+    }
   }
   return(invisible(pred.final))
 }
