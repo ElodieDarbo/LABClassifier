@@ -8,9 +8,11 @@ LABclassifier(
   data,
   LABClassif = NULL,
   raw.counts = F,
+  log2T = F,
   id.type = "SYMBOL",
   PAM50 = F,
-  plot = F
+  plot = F,
+  prefix = NULL
 )
 }
 \arguments{
@@ -25,6 +27,8 @@ is used (default);}
 \item{raw.counts}{A logical. Set it to TRUE if you are using raw sequencing
 data, then they will be transformed in TPM. Default: FALSE;}
 
+\item{log2T}{A logical. If true, data are log2 transformed. Default: FALSE;}
+
 \item{id.type}{A character string. Gene identifier type in the input matrix. Possible values are
 ensEMBL, entrezID, SYMBOL (default)}
 
@@ -33,6 +37,10 @@ function from genefu package. If used, please cite the corresponding paper (See 
 
 \item{plot}{A logical. Set it to TRUE to display classification
 diagnostic plots. Default: FALSE}
+
+\item{prefix}{A character string. If set, a directory Output is created in the
+working directory (if not exists), and the prediction result is saved in as a
+tabulated file. The filename is prefix_LAB_prefix.tab}
 }
 \value{
 \code{LABclassifier} Returns a data.frame with columns
