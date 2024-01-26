@@ -8,7 +8,8 @@ Depends: R (>= 4.0),
          stats,
          genefu
 Imports: mixdist,
-         themis
+         themis,
+         GSVA
 Authors@R: 
     c(person(given="Elodie", 
               family="Darbo", 
