@@ -342,7 +342,7 @@ LABclassifier <- function(data,LABClassif=NULL,raw.counts=F,log2T=F,id.type="SYM
            },
            apocrine={
              y <- 2 - y
-             wa <- 0.8
+             wa <- 0.6
              wb <- 0.7
            }
            )
@@ -384,7 +384,7 @@ LABclassifier <- function(data,LABClassif=NULL,raw.counts=F,log2T=F,id.type="SYM
       return(distances)
     })
     #print(plot(density(distances)))
-    round(pnorm(distances,mean = 0,sd = 0.3,lower.tail = F),7)
+    round(pnorm(distances,mean = 0,sd = 0.31,lower.tail = F),7)
 
     #pgamma(distances,shape = 1,scale = 0.25,lower.tail = F)
   }
@@ -426,17 +426,22 @@ LABclassifier <- function(data,LABClassif=NULL,raw.counts=F,log2T=F,id.type="SYM
     message("Start plotting ...")
     thrs.lines <- data.frame(sensory2secretory=rep(0,3),xend=rep(1,3),Luminal2Apocrine=c(0.9,1,1.1),yend=c(0.9,1,1.1))
     g <- ggplot(pred.final,aes(x=sensory2secretory,y=Luminal2Apocrine)) + theme_bw() +
-      lims(x=c(0,2),y=c(0,2)) +
+      #lims(x=c(0,2),y=c(0,2)) +
       geom_vline(xintercept = c(0.9,1,1.1),linetype=c("dashed","solid","dashed"),size=rep(0.5,3),color=rep("darkgrey",3)) +
       geom_segment(data=thrs.lines,aes(xend=xend,yend=yend),linetype=c("dashed","solid","dashed"),size=0.5,color="darkgrey") +
       labs(x="Distance to sensory centroid",y="Distance to Luminal centroid") + theme(aspect.ratio = 1,legend.position="top")
-      g1 <- g + geom_point(aes(color=prediction.strict)) + scale_color_manual(values=c(Basal="red",Luminal="darkblue",MA="pink",unclassified="grey")) + geom_point(data=pred.final[pred.final$prediction.strict=="MA",],shape=1,color="purple")
+    g1 <- g + geom_point(aes(color=prediction.strict)) + scale_color_manual(values=c(Basal="red",Luminal="darkblue",MA="pink",unclassified="grey")) +
+        geom_point(data=pred.final[pred.final$prediction.strict=="MA",],shape=1,color="purple") +
+        coord_flip() + scale_y_reverse() + scale_x_reverse()
       #g9 <- g + geom_point(data=pred.final,aes(color=confidence)) + scale_color_manual(values=c(high="red",medium="orange",low="grey"))
-      g9 <- g + geom_point(aes(color=confidence)) + scale_color_gradientn(colours = c("yellow","orange","red","black"),limits=c(0,0.5),values = c(0,0.02,0.1,0.2,0.5,1))
-      if (PAM50){
-        gpam <- g + geom_point(data=pred.final,aes(color=PAM50)) + scale_color_manual(values=c(Basal="red",LumA="darkblue",Her2="pink",LumB="lightblue")) + geom_point(data=pred.final[pred.final$PAM50=="Her2",],shape=1,color="deeppink")
-      }
-      if (!is.vector(data)){
+    g9 <- g + geom_point(aes(color=confidence)) +
+        scale_color_gradientn(colours = c("yellow","orange","red","black"),limits=c(0,0.5),values = c(0,0.02,0.1,0.2,0.5,1)) +
+        coord_flip() + scale_y_reverse() + scale_x_reverse()
+    if (PAM50){
+        gpam <- g + geom_point(data=pred.final,aes(color=PAM50)) + scale_color_manual(values=c(Basal="red",LumA="darkblue",Her2="pink",LumB="lightblue")) + geom_point(data=pred.final[pred.final$PAM50=="Her2",],shape=1,color="deeppink")+
+          coord_flip() + scale_y_reverse() + scale_x_reverse()
+    }
+    if (!is.vector(data)){
         g3 <- expression.dotplot(data, pred.final,"ESR1","FOXA1")
         g10 <- expression.dotplot(data, pred.final,"ESR1","FOXA1",confidence=T)
         g5 <- expression.dotplot(data, pred.final,"ESR1","AR")
