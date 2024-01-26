@@ -30,7 +30,11 @@ plot.splits <- function(filename,LP.dat,lp.tf,LP.split,LA.dat,mal,LA.split){
 
     par(mfrow=c(2,5))
 
-    plot(LP.dat, main="All tumours by LP-split TFs",xlab="Sensory score",ylab="Secretory score")
+    axis.min <- min(LP.dat)
+    axis.max <- max(LP.dat)
+
+    plot(LP.dat, main="All tumours by LP-split TFs",xlab="Sensory score",ylab="Secretory score",xlim=c(axis.min,axis.max),ylim=c(axis.min,axis.max))
+    abline(a=0,b = 1,col="blue")
     mtext(side = 3, text = "A",adj=(-0.32),line=0.7, cex=1.75)
 
     plot(lp.tf[1,],lp.tf[2,], main="45 degree rotation of LP-split TFs",xlab="Luminal Progenitor Score",ylab="Luminal Progenitor noise")
@@ -49,8 +53,14 @@ plot.splits <- function(filename,LP.dat,lp.tf,LP.split,LA.dat,mal,LA.split){
     mtext(side = 3, text = "E",adj=(-0.32),line=0.7, cex=1.75)
     mtext(side = 1, line= 3, text = "Luminal Progenitor score",cex=0.7)
     mtext(side = 1, line= 4, text = paste("grey zone = means +/-",round(LP.split$times.sd,2),"sd"),cex=0.7)
-
-    plot(LA.dat, main="Sensory tumours by ER metagene",xlab="Luminal score",ylab="Apocrine score")
+    axis.min <- min(LA.dat)
+    axis.max <- max(LA.dat)
+    plot(LA.dat, main="Sensory tumours by ER metagene",xlab="Luminal score",ylab="Apocrine score",xlim=c(axis.min,axis.max),ylim=c(axis.min,axis.max))
+    abline(a=0,b = 1,col="blue")
+    abline(v=0,lty=2)
+    abline(h=0,lty=2)
+    abline(h=2,col=colours()[613],lty=2)
+    abline(h=4,col=colours()[33],lty=2)
     mtext(side = 3, text = "F",adj=(-0.32),line=0.7, cex=1.75)
 
     plot(mal[1,],mal[2,], main="45 degree rotation of ER metagene",xlab="Luminal-Apocrine score",ylab="Luminal-Apocrine noise")
@@ -75,41 +85,51 @@ plot.splits <- function(filename,LP.dat,lp.tf,LP.split,LA.dat,mal,LA.split){
 }
 
 
-initial.classif <- function(num, filename) {
+initial.classif <- function(num, filename,method,sensor.genes,secretor.genes,asc.genes,lsc.genes,use.ra) {
   #Use cell identity TFs to find the lumapo/basal (luminal progenitor) split
-  sensor.genes <- toupper(c("esr1","ar","foxa1","tox3","spdef","gata3","myb","msx2","tfap2b","esrrg"))
   sensor <- num[row.names(num)%in%sensor.genes,]
   if (sum(row.names(num)%in%sensor.genes)<length(sensor.genes)){
     message("Sensor genes")
     message("WARNING: genes ",paste(sensor.genes[!sensor.genes%in%row.names(num)],collapse=", ")," are not in your input data")
   }
-  secretor.genes <- toupper(c("foxc1","bcl11a","elf5","klf5","vgll1","nfib","id4","sox10","en1"))
   secretor <- num[row.names(num)%in%secretor.genes,]
   if (sum(row.names(num)%in%secretor.genes)<length(secretor.genes)){
     message("Secretor genes")
     message("WARNING: genes ",paste(secretor.genes[!secretor.genes%in%row.names(num)],collapse=", ")," are not in your input data")
   }
  # Genes for LA split
-  la.list <- c("ESR1", "CA12", "BCL2", "GFRA1", "GREB1", "FAM134B", "IGF1R", "NPY1R", "ANXA9", "SERPINA5", "SCCPDH", "IRS1", "ABAT", "SERPINA3", "MTL5", "IL8", "LIMCH1", "DKK1", "HSD17B2", "PERP", "TFAP2B", "SOX11", "AKR1B10", "RARRES1", "KRT7", "KYNU", "PSAT1", "PAPSS2", "KMO", "CLCA2")
-  if (sum(row.names(num)%in%la.list)<length(secretor.genes)){
+  #la.list <- c("ESR1", "CA12", "BCL2", "GFRA1", "GREB1", "FAM134B", "IGF1R", "NPY1R", "ANXA9", "SERPINA5", "SCCPDH", "IRS1", "ABAT", "SERPINA3", "MTL5", "IL8", "LIMCH1", "DKK1", "HSD17B2", "PERP", "TFAP2B", "SOX11", "AKR1B10", "RARRES1", "KRT7", "KYNU", "PSAT1", "PAPSS2", "KMO", "CLCA2")
+  if (sum(row.names(num)%in%c(asc.genes,lsc.genes))<length(c(asc.genes,lsc.genes))){
     message("Luminal/Apocrine split genes")
-    message("WARNING: genes ",paste(la.list[!la.list%in%row.names(num)],collapse=", ")," are not in your input data")
+    message("WARNING: genes ",paste(c(asc.genes,lsc.genes)[!c(asc.genes,lsc.genes)%in%row.names(num)],collapse=", ")," are not in your input data")
   }
 
 
   message("Compute sensory / secretory split")
 
-  hsc<- (sensor - apply(sensor,1,mean))/apply(sensor,1,function(x){ IQR(x)/(qnorm(0.75) - qnorm(0.25)) })
-  msc<- (secretor - apply(secretor,1,median))/apply(secretor,1,function(x){ IQR(x)/(qnorm(0.75) - qnorm(0.25)) }) #milk secreting cell
+  switch(method,
+         mean={
+           hsc<- t(scale(t(sensor))) #hormone sensing cell
+           msc<- t(scale(t(secretor))) #milk secreting cell
 
-  mean.hsc<-apply(hsc,2,mean)
-  mean.msc<-apply(msc,2,mean)
+           mean.hsc<-apply(hsc,2,mean)
+           mean.msc<-apply(msc,2,mean)
+         },
+         ssgsea={
+           mean.hsc <- as.vector(gsva(as.matrix(num),list(sensor.genes),method="ssgsea", ssgsea.norm = FALSE, verbose = TRUE)/1000)
+           names(mean.hsc) <- colnames(num)
+           mean.msc <- as.vector(gsva(as.matrix(num),list(secretor.genes),method="ssgsea", ssgsea.norm = FALSE, verbose = TRUE)/1000)
+           names(mean.msc) <- colnames(num)
+         }
+
+         )
+
 
   LP.dat <- data.frame(mean.hsc,mean.msc)
+  print(dim(LP.dat))
 
   lp.tf <- rotate.45(mean.hsc,mean.msc)
   lpsplit<-lp.tf[1,]
-
 
   #Find the means of the distributions, put the cutoff half way between them
   #Convert to a more easily interpretable scale (set the means to -1 and 1)
@@ -123,20 +143,37 @@ initial.classif <- function(num, filename) {
 
   sct<-num[,hormone]
 
-  lsc.genes <- la.list[1:15]
+
+  if (use.ra){
+    RA_genes <- c("UGT2B28","SEC14L2","SERHL2","FKBP5","MYBPC1","AQP3","CLDN8","ZBTB16",
+                  "IQGAP2","GGT1","ECHDC2","AZGP1","FASN","MCCC2","FMO5","SORD","SLC15A2",
+                  "PIP","EAF2","CROT","ALCAM","RND1")
+    asc.genes <- unique(c(asc.genes,RA_genes))
+  }
+  print(asc.genes)
   lsc <- sct[row.names(sct)%in%lsc.genes,]
-  lsc <- (lsc - apply(lsc,1,mean))/apply(lsc,1,function(x){ IQR(x)/(qnorm(0.75) - qnorm(0.25)) })
-
-  asc.genes <- la.list[16:30]
   asc <- sct[row.names(sct)%in%asc.genes,]
-  asc <-  (asc - apply(asc,1,mean))/apply(asc,1,function(x){ IQR(x)/(qnorm(0.75) - qnorm(0.25)) })
 
-  mean.lsc<-apply(lsc,2,mean)
-  mean.asc<-apply(asc,2,mean)
+  switch(method,
+         mean={
+           lsc<-t(scale(t(lsc))) #luminal sensor cell
+           asc<-t(scale(t(asc))) #apocrine sensor cell
+           mean.lsc<-apply(lsc,2,mean)
+           mean.asc<-apply(asc,2,mean)
+         },
+         ssgsea={
+           mean.lsc <- as.vector(gsva(as.matrix(sct),list(lsc.genes),method="ssgsea", ssgsea.norm = FALSE, verbose = TRUE)/1000)
+           names(mean.lsc) <- colnames(sct)
+           mean.asc <- as.vector(gsva(as.matrix(sct),list(asc.genes),method="ssgsea", ssgsea.norm = FALSE, verbose = TRUE)/1000)
+           names(mean.asc) <- colnames(sct)
+         }
+
+         )
+
 
 
   LA.dat <- data.frame(mean.lsc,mean.asc)
-
+  print(dim(LA.dat))
   #Rotate backwards by 45 degree to put the variation on one axis
   mal <- rotate.45(mean.lsc,mean.asc)
   lasplit<-mal[1,]
@@ -175,13 +212,45 @@ initial.classif <- function(num, filename) {
 }
 
 
-lab.classifier <- function(data,dir.path=".",prefix){
-  setwd(dir.path)
-  message("Creating an LABmodel folder in working directory: ",getwd())
-  dir.create("LABmodel", recursive = TRUE, showWarnings = FALSE)
-  prefix <- file.path("LABmodel",prefix)
+#' \code{lab.classifier} computes splits according to either average expression
+#' of TFs defining the splits or their enrichment according to ssGSEA
+#' @param data A data.frame containing expression values from samples to classify;
+#' @param dir.path A character string defining the path to where the results
+#' will be stored. Default: current directory.
+#' @param prefix A character string: prefix of the outputs.
+#' @param method A character string: Either \code{mean} or \code{ssgsea}. \code{mean} computes the average
+#' expression values of TFs defining the splits and \code{ssgsea} uses the function gsva
+#' from GSVA R packages with no normalisation. Default: mean
+#' @param sensor.genes,secretor.genes,asc.genes,lsc.genes Vectors: Gene list to compute splits.
+#' If no gene list is given, pre-defined ones are used. Default: NULL
+#' @param use.ra Boolean: If set to TRUE, the Androgen Receptor target genes are added to the molecular
+#' apocrine split genes. Default: FALSE
+#' @export
+#' @import grDevices
+#' @importFrom GSVA gsva
+#' @return A data.frame containing LAB classification
+
+
+lab.classifier <- function(data,dir.path=".",prefix,method="mean",sensor.genes=NULL,secretor.genes=NULL,asc.genes=NULL,lsc.genes=NULL,use.ra=F){
+  message("Creating an LABmodel folder in working directory: ",dir.path)
+  dir.create(file.path(dir.path,"LABmodel"), recursive = TRUE, showWarnings = FALSE)
+  prefix <- file.path(dir.path,"LABmodel",prefix)
   message("Classifying according to LAB classifier")
-  LABclass <- initial.classif(data,prefix)
+  if (is.null(sensor.genes)){
+    sensor.genes <- toupper(c("esr1","ar","foxa1","tox3","spdef","gata3","myb","msx2","tfap2b","esrrg"))
+  }
+  if (is.null(secretor.genes)){
+    secretor.genes <- toupper(c("foxc1","bcl11a","elf5","klf5","vgll1","nfib","id4","sox10","en1"))
+  }
+  if (is.null(asc.genes)){
+    asc.genes <- c("S100A8","IL8", "DKK1","HSD17B2",  "PERP","SOX11","AKR1B10","RARRES1","KRT7","KYNU",
+                   "PSAT1","KMO","CLCA2","SERHL2","CLDN8","UGT2B28","FABP7")
+  }
+  if (is.null(lsc.genes)){
+    lsc.genes <- c("ESR1","CA12","BCL2","GFRA1","GREB1","FAM134B","IGF1R","NPY1R","ANXA9","SERPINA5",
+                   "SCCPDH","IRS1","ABAT","SERPINA3","TFF1","AGR3","NAT1","GATA3","ERBB4","MTL5")
+  }
+  LABclass <- initial.classif(data,prefix,method,sensor.genes,secretor.genes,asc.genes,lsc.genes,use.ra)
   return(LABclass)
 }
 
@@ -228,7 +297,7 @@ computeCentroids <- function(annots,DF,col_interest) {
 }
 
 
-make.model <- function(annot,df,spl){
+make.model <- function(annot,df,spl,smote=F){
   switch(spl,
          ss={
            col_of_interest <- "ss.split"
@@ -236,18 +305,28 @@ make.model <- function(annot,df,spl){
          },
          la={
            col_of_interest <- "ss.la"
-           genes <- c("ESR1", "CA12", "BCL2", "GFRA1", "GREB1", "FAM134B", "IGF1R", "NPY1R", "ANXA9", "SERPINA5", "SCCPDH", "IRS1", "ABAT", "SERPINA3", "MTL5", "IL8", "LIMCH1", "DKK1", "HSD17B2", "PERP", "TFAP2B", "SOX11", "AKR1B10", "RARRES1", "KRT7", "KYNU", "PSAT1", "PAPSS2", "KMO", "CLCA2")
+           genes <- c("ESR1",     "CA12",     "BCL2",     "GFRA1",    "GREB1",    "FAM134B",  "IGF1R",
+                      "NPY1R",    "ANXA9",    "SERPINA5", "SCCPDH",   "IRS1",     "ABAT",     "SERPINA3",
+                      "TFF1",     "AGR3",     "NAT1",     "GATA3",    "ERBB4",    "MTL5",     "S100A8",
+                      "IL8",      "DKK1",     "HSD17B2",  "PERP",     "SOX11",
+                      "AKR1B10",  "RARRES1",  "KRT7",     "KYNU",     "PSAT1",   "KMO",
+                      "CLCA2",    "SERHL2",   "CLDN8",    "UGT2B28",  "FABP7")
          }
   )
   df <- df[row.names(df)%in%genes,]
-  df.smote <- as.data.frame(t(df))
-  df.smote$class <- factor(annot[colnames(df),col_of_interest])
-  df.smote <- smote(df.smote, var="class",over_ratio = 0.5)
-  smote.annot <- data.frame(pred=df.smote$class,tmp=df.smote$class,row.names=paste0("s",1:nrow(df.smote)))
-  colnames(smote.annot)[1] <- col_of_interest
-  df.smote$class <- NULL
-  df.smote <- as.data.frame(t(df.smote))
-  colnames(df.smote) <- row.names(smote.annot)
+  if (smote){
+    df.smote <- as.data.frame(t(df))
+    df.smote$class <- factor(annot[colnames(df),col_of_interest])
+    df.smote <- smote(df.smote, var="class",over_ratio = 0.5)
+    smote.annot <- data.frame(pred=df.smote$class,tmp=df.smote$class,row.names=paste0("s",1:nrow(df.smote)))
+    colnames(smote.annot)[1] <- col_of_interest
+    df.smote$class <- NULL
+    df.smote <- as.data.frame(t(df.smote))
+    colnames(df.smote) <- row.names(smote.annot)
+  }
+  else {
+    df.smote <- df
+  }
   centroids <- computeCentroids(annots=annot,DF=df,col_interest=col_of_interest)
   return(centroids)
 }
