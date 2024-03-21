@@ -6,7 +6,8 @@ Depends: R (>= 4.0),
          grDevices,
          graphics,
          stats,
-         genefu
+         genefu,
+         pheatmap
 Imports: GSVA
 Authors@R: 
     c(person(given="Elodie", 

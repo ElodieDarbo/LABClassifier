@@ -318,6 +318,7 @@ expression.dotplot <- function(data, predictions,g1,g2,PAM50=F){
 #' @importFrom utils write.table
 #' @export
 #' @import grDevices
+#' @import pheatmap
 #' @importFrom GSVA gsva
 #' @return A data.frame containing LAB classification
 #' @examples
@@ -363,6 +364,9 @@ LABclassifier <- function(data,dir.path=".",prefix="myClassif",raw.counts=F,log2
     w <- 10
     h <- 4
     if (ncol(data)>1){
+      annot.col <- pred.final[,c("pred","RA_activity")]
+      colnames(annot.col)[1] <- "LABClassif"
+      annot.colors <- list(LABClassif=c(MA="pink",Basal="red",Luminal="darkblue"))
       g3 <- expression.dotplot(data, pred.final,"ESR1","FOXA1")
       g4 <- ggplot(pred.final,aes(x=RA_activity)) + theme_bw() +
         geom_density() + geom_rug(aes(color=pred),length = unit(0.1, "npc")) +
@@ -370,6 +374,8 @@ LABclassifier <- function(data,dir.path=".",prefix="myClassif",raw.counts=F,log2
         theme(aspect.ratio = 3/4,legend.title=element_blank(),legend.position = "top")
 
       if (PAM50){
+        annot.col$PAM50 <- pred.final$PAM50
+        annot.colors$PAM50 <- c(Her2="pink",Basal="red",LumA="darkblue",LumB="lightblue",Normal="grey")
         gpam1 <- expression.dotplot(data, pred.final,"ESR1","FOXA1",PAM50=T)
         gpam2 <- ggplot(pred.final,aes(x=RA_activity)) + theme_bw() +
           geom_density() + geom_rug(aes(color=PAM50),length = unit(0.1, "npc")) +
@@ -381,6 +387,22 @@ LABclassifier <- function(data,dir.path=".",prefix="myClassif",raw.counts=F,log2
        multiplot(g3,g4,cols=2)
       }
       export.plot(paste0(prefix,"_LAB_predictions"),width=w,height=h)
+      data <- data - apply(data,1,median)
+      thr <- max(abs(data))
+      pheatmap(data[row.names(data)%in%c(sensor.genes,secretor.genes,asc.genes,lsc.genes),],
+               show_colnames = F,
+               #show_rownames = F,
+               border_color = NA,
+               annotation_col = annot.col,
+               annotation_colors = annot.colors,
+               breaks=seq(-thr,thr,thr*2/100),
+               color=colorRampPalette(c("green","green","green","black","red","red","red"))(100),
+               clustering_method = "ward.D",
+               clustering_distance_cols = "correlation",
+               clustering_distance_rows = "correlation"
+               )
+      export.plot(paste0(prefix,"_LAB_predictions_heatmap"),width=8,height=12)
+
     } else {
       message("A unique sample can't be plotted")
     }
