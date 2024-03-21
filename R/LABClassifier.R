@@ -383,6 +383,16 @@ LABclassifier <- function(data,dir.path=".",prefix="myClassif",raw.counts=F,log2
           theme(aspect.ratio = 3/4,legend.position = "top",legend.title=element_blank())
         multiplot(g3,gpam1,g4,gpam2,cols=2)
         h <- 8
+        confusion <- as.data.frame.matrix(table(pred.final$pred,pred.final$PAM50))
+        pheatmap(round(confusion[,c("Basal","Normal","LumA","LumB","Her2")]),
+                 cluster_rows = F,
+                 cluster_cols = F,
+                 color=colorRampPalette(c("white",colours()[72]))(100),
+                 display_numbers = T,
+                 number_format = "%.0f"
+        )
+        export.plot(paste0(prefix,"_LAB_PAM50_confusion"),width=8,height=6)
+
       } else {
        multiplot(g3,g4,cols=2)
       }
