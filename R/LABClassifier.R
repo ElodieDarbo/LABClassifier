@@ -397,9 +397,10 @@ LABclassifier <- function(data,dir.path=".",prefix="myClassif",raw.counts=F,log2
        multiplot(g3,g4,cols=2)
       }
       export.plot(paste0(prefix,"_LAB_predictions"),width=w,height=h)
-      data <- data - apply(data,1,median)
+      data <- data[row.names(data)%in%c(sensor.genes,secretor.genes,asc.genes,lsc.genes),]
+      data <- data - apply(data,1,mean)
       thr <- max(abs(data))
-      pheatmap(data[row.names(data)%in%c(sensor.genes,secretor.genes,asc.genes,lsc.genes),],
+      pheatmap(data,
                show_colnames = F,
                #show_rownames = F,
                border_color = NA,
