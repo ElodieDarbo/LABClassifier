@@ -7,9 +7,7 @@ Depends: R (>= 4.0),
          graphics,
          stats,
          genefu
-Imports: mixdist,
-         themis,
-         GSVA
+Imports: GSVA
 Authors@R: 
     c(person(given="Elodie", 
               family="Darbo", 

@@ -2,7 +2,7 @@
 #'
 #'
 #' @format ## `TCGA.rsem`
-#' A data frame with 48 genes (rows) and 674 samples (columns):
+#' A data frame with 72 genes (rows) and 674 samples (columns):
 #' \describe{
 #'   \item{genes}{Genes useful to classify samples with centroids.}
 #'   \item{samples}{Breast cancer samples from the TCGA consortium filtered
