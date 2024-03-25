@@ -7,7 +7,8 @@ Depends: R (>= 4.0),
          graphics,
          stats,
          genefu,
-         pheatmap
+         pheatmap,
+         viridis
 Imports: GSVA
 Authors@R: 
     c(person(given="Elodie", 
