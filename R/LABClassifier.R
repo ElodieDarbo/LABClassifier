@@ -82,14 +82,14 @@ ssGSEA.classif <- function(num, filename,sensor.genes,secretor.genes,asc.genes,l
   if (v){
     is.basal <- lpsplit<0
     if (is.basal){
-      LABclass <- data.frame(row.names=colnames(num),score=lpsplit,pred="Basal",RA_activity=all.scores$RA_activ)
+      LABclass <- data.frame(row.names=colnames(num),score=lpsplit,pred="Basal",AR_activity=all.scores$RA_activ)
     } else {
       mal <- rotate.45(all.scores$mean.lsc,all.scores$mean.asc)
       lasplit<-mal[1,]
       if (lasplit>=0){
-        LABclass <- data.frame(row.names=colnames(num),score=lasplit,pred="Luminal",RA_activity=all.scores$RA_activ)
+        LABclass <- data.frame(row.names=colnames(num),score=lasplit,pred="Luminal",AR_activity=all.scores$RA_activ)
       } else {
-        LABclass <- data.frame(row.names=colnames(num),score=lasplit,pred="MA",RA_activity=all.scores$RA_activ)
+        LABclass <- data.frame(row.names=colnames(num),score=lasplit,pred="MA",AR_activity=all.scores$RA_activ)
       }
     }
   }
@@ -118,7 +118,7 @@ ssGSEA.classif <- function(num, filename,sensor.genes,secretor.genes,asc.genes,l
     LUM<-rep("Luminal",length(LABlum))
     APO<-rep("MA",length(LABapo))
     BAS<-rep("Basal",length(LABbas))
-    LABclass <- data.frame(row.names=c(names(LABlum),names(LABapo),names(LABbas)),score=c(as.numeric(LABlum),as.numeric(LABapo),as.numeric(LABbas)),pred=c(LUM,APO,BAS),RA_activity=all.scores[c(names(LABlum),names(LABapo),names(LABbas)),"RA_activ"])
+    LABclass <- data.frame(row.names=c(names(LABlum),names(LABapo),names(LABbas)),score=c(as.numeric(LABlum),as.numeric(LABapo),as.numeric(LABbas)),pred=c(LUM,APO,BAS),AR_activity=all.scores[c(names(LABlum),names(LABapo),names(LABbas)),"RA_activ"])
 
   }
 
@@ -319,6 +319,7 @@ expression.dotplot <- function(data, predictions,g1,g2,PAM50=F){
 #' @export
 #' @import grDevices
 #' @import pheatmap
+#' @import viridis
 #' @importFrom GSVA gsva
 #' @return A data.frame containing LAB classification
 #' @examples
@@ -327,7 +328,7 @@ expression.dotplot <- function(data, predictions,g1,g2,PAM50=F){
 
 
 LABclassifier <- function(data,dir.path=".",prefix="myClassif",raw.counts=F,log2T=F,id.type="SYMBOL",PAM50=F,plot=T,sensor.genes=NULL,secretor.genes=NULL,asc.genes=NULL,lsc.genes=NULL){
-  RA_activity <- pred <- NULL
+  AR_activity <- pred <- NULL
   message("Creating an Output folder in working directory: ",dir.path)
   dir.create(file.path(dir.path,"Output"), recursive = TRUE, showWarnings = FALSE)
   prefix <- file.path(dir.path,"Output",prefix)
@@ -361,15 +362,17 @@ LABclassifier <- function(data,dir.path=".",prefix="myClassif",raw.counts=F,log2
   pred.final <- LABclass
 
   if (plot) {
-    w <- 10
+    w <- 18
     h <- 4
     if (ncol(data)>1){
-      annot.col <- pred.final[,c("pred","RA_activity")]
+      annot.col <- pred.final[,c("pred","AR_activity")]
       colnames(annot.col)[1] <- "LABClassif"
-      annot.colors <- list(LABClassif=c(MA="pink",Basal="red",Luminal="darkblue"))
+      annot.colors <- list(LABClassif=c(MA="pink",Basal="red",Luminal="darkblue"), AR_activity = inferno(10, begin = 0, end = 0.8))
       g3 <- expression.dotplot(data, pred.final,"ESR1","FOXA1")
-      g4 <- ggplot(pred.final,aes(x=RA_activity)) + theme_bw() +
-        geom_density() + geom_rug(aes(color=pred),length = unit(0.1, "npc")) +
+      g5 <- expression.dotplot(data, pred.final,"AR","FOXA1")
+      g6 <- expression.dotplot(data, pred.final,"AR","ERBB2")
+      g4 <- ggplot(pred.final,aes(x=AR_activity)) + theme_bw() +
+        geom_density(aes(color=pred)) + geom_rug(aes(color=pred),length = unit(0.1, "npc")) +
         scale_color_manual(values=c(MA="pink",Basal="red",Luminal="darkblue")) +
         theme(aspect.ratio = 3/4,legend.title=element_blank(),legend.position = "top")
 
@@ -377,12 +380,15 @@ LABclassifier <- function(data,dir.path=".",prefix="myClassif",raw.counts=F,log2
         annot.col$PAM50 <- pred.final$PAM50
         annot.colors$PAM50 <- c(Her2="pink",Basal="red",LumA="darkblue",LumB="lightblue",Normal="grey")
         gpam1 <- expression.dotplot(data, pred.final,"ESR1","FOXA1",PAM50=T)
-        gpam2 <- ggplot(pred.final,aes(x=RA_activity)) + theme_bw() +
-          geom_density() + geom_rug(aes(color=PAM50),length = unit(0.1, "npc")) +
+        gpam3 <- expression.dotplot(data, pred.final,"AR","FOXA1",PAM50=T)
+        gpam4 <- expression.dotplot(data, pred.final,"AR","ERBB2",PAM50=T)
+        gpam2 <- ggplot(pred.final,aes(x=AR_activity)) + theme_bw() +
+          geom_density(aes(color=PAM50)) + geom_rug(aes(color=PAM50),length = unit(0.1, "npc")) +
           scale_color_manual(values=c(Her2="pink",Basal="red",LumA="darkblue",LumB="lightblue")) +
           theme(aspect.ratio = 3/4,legend.position = "top",legend.title=element_blank())
-        multiplot(g3,gpam1,g4,gpam2,cols=2)
+        print(multiplot(g3,gpam1,g5,gpam3,g6,gpam4,g4,gpam2,cols=4))
         h <- 8
+        export.plot(paste0(prefix,"_LAB_predictions"),width=w,height=h)
         confusion <- as.data.frame.matrix(table(pred.final$pred,pred.final$PAM50))
         pheatmap(round(confusion[,c("Basal","Normal","LumA","LumB","Her2")]),
                  cluster_rows = F,
@@ -394,9 +400,9 @@ LABclassifier <- function(data,dir.path=".",prefix="myClassif",raw.counts=F,log2
         export.plot(paste0(prefix,"_LAB_PAM50_confusion"),width=8,height=6)
 
       } else {
-       multiplot(g3,g4,cols=2)
+       multiplot(g3,g5,g6,g4,cols=4)
+       export.plot(paste0(prefix,"_LAB_predictions"),width=w,height=h)
       }
-      export.plot(paste0(prefix,"_LAB_predictions"),width=w,height=h)
       data <- data[row.names(data)%in%c(sensor.genes,secretor.genes,asc.genes,lsc.genes),]
       data <- data - apply(data,1,mean)
       thr <- max(abs(data))
@@ -419,7 +425,7 @@ LABclassifier <- function(data,dir.path=".",prefix="myClassif",raw.counts=F,log2
     }
   }
 
-  pred.final$Row.names <- NULL
+  pred.final$Row.names <- pred.final$score <-  NULL
   write.table(pred.final,paste0(prefix,"_LAB_predictions.tab"),sep="\t",quote=F)
   # RA_genes <- c("UGT2B28","SEC14L2","SERHL2","FKBP5","MYBPC1","AQP3","CLDN8","ZBTB16","IQGAP2","GGT1","ECHDC2","AZGP1","FASN","MCCC2","FMO5","SORD","SLC15A2","PIP","EAF2","CROT","ALCAM","RND1")
   return(pred.final)
