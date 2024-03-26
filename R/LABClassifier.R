@@ -194,6 +194,33 @@ prepare.data <- function(data,id.type,log2T,raw.counts,PAM50){
 }
 
 
+#' \code{compute.cutoff.distrib} uses \code{densityMclust} from mclust package.
+#' @param data Either a data.frame storing in columns the data to evaluate or a
+#' numeric vector
+#' @param prefix The prefix for the plot file that will be stored in the Output
+#' folder
+#' @param feature If data is a data.frame, feature is the column name of interest.
+#' In any case feature will be added to the plot file name
+#' @import mclust
+#' @return \code{compute.cutoff.distrib} Returns a numerical cutoff.
+
+
+compute.cutoff.distrib <- function(data,prefix,feature){
+  if (!is.vector(data)){
+    data <- data[,feature]
+  }
+  mod <- densityMclust(data,plot = F,verbose=F)
+  G <- mod$parameters$variance$G
+  mu <- data.frame(x=mod$parameters$mean,y=0)
+  cutoff <- sum(sort(mod$parameters$mean,decreasing=T)[1:2])/2
+  plot(mod,what="density",data=data,breaks=10)
+  points(mu,pch=17,col="red")
+  abline(v=cutoff,lty=2,col="red")
+  export.plot(paste0("./Output/",prefix,"_distribution_",feature))
+  message("The cutoff for ",feature," distribution is: ",round(cutoff,2))
+  return(cutoff)
+}
+
 #' \code{PAMgenefu} uses \code{molecular.subtyping} from genefu package.
 #' Please cite the corresponding paper (See reference).
 #' @param data A data.frame containing gene (gene symbols as rows) expression
@@ -362,6 +389,7 @@ LABclassifier <- function(data,dir.path=".",prefix="myClassif",raw.counts=F,log2
   pred.final <- LABclass
 
   if (plot) {
+    message("Creating plots ...")
     w <- 18
     h <- 4
     if (ncol(data)>1){
