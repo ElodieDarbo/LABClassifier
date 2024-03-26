@@ -8,7 +8,8 @@ Depends: R (>= 4.0),
          stats,
          genefu,
          pheatmap,
-         viridis
+         viridis,
+         mclust
 Imports: GSVA
 Authors@R: 
     c(person(given="Elodie", 
