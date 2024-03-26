@@ -345,7 +345,7 @@ LABclassifier <- function(data,dir.path=".",prefix="myClassif",raw.counts=F,log2
   }
   if (is.null(lsc.genes)){
     lsc.genes <- c("ESR1","CA12","BCL2","GFRA1","GREB1","FAM134B","IGF1R","NPY1R","ANXA9","SERPINA5",
-                   "SCCPDH","IRS1","ABAT","SERPINA3","TFF1","AGR3","NAT1","GATA3","ERBB4","MTL5")
+                   "SCCPDH","IRS1","ABAT","SERPINA3","TFF1","NAT1","ERBB4","MTL5")
   }
   data <- prepare.data(data,id.type,log2T,raw.counts,PAM50)
   if (ncol(data)==1){
@@ -390,7 +390,7 @@ LABclassifier <- function(data,dir.path=".",prefix="myClassif",raw.counts=F,log2
         h <- 8
         export.plot(paste0(prefix,"_LAB_predictions"),width=w,height=h)
         confusion <- as.data.frame.matrix(table(pred.final$pred,pred.final$PAM50))
-        pheatmap(round(confusion[,c("Basal","Normal","LumA","LumB","Her2")]),
+        pheatmap(round(confusion[,colnames(confusion)%in%c("Basal","Normal","LumA","LumB","Her2")]),
                  cluster_rows = F,
                  cluster_cols = F,
                  color=colorRampPalette(c("white",colours()[72]))(100),
