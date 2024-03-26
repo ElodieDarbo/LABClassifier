@@ -327,7 +327,7 @@ expression.dotplot <- function(data, predictions,g1,g2,PAM50=F){
 #' LABclassifier(TCGA.rsem,plot=TRUE)
 
 
-LABclassifier <- function(data,dir.path=".",prefix="myClassif",raw.counts=F,log2T=F,id.type="SYMBOL",PAM50=F,plot=T,sensor.genes=NULL,secretor.genes=NULL,asc.genes=NULL,lsc.genes=NULL){
+LABclassifier <- function(data,dir.path=".",prefix="myClassif",raw.counts=F,log2T=F,id.type="SYMBOL",PAM50=F,plot=T,sensor.genes=NULL,secretor.genes=NULL,asc.genes=NULL,lsc.genes=NULL,colorBlind=F){
   AR_activity <- pred <- NULL
   message("Creating an Output folder in working directory: ",dir.path)
   dir.create(file.path(dir.path,"Output"), recursive = TRUE, showWarnings = FALSE)
@@ -406,6 +406,11 @@ LABclassifier <- function(data,dir.path=".",prefix="myClassif",raw.counts=F,log2
       data <- data[row.names(data)%in%c(sensor.genes,secretor.genes,asc.genes,lsc.genes),]
       data <- data - apply(data,1,mean)
       thr <- max(abs(data))
+      if (colorBlind){
+        palette <- colorRampPalette(colours()[c(121,121,121,24,142,142,142)])(100)
+      } else {
+        palette <- colorRampPalette(c("green","green","green","black","red","red","red"))(100)
+      }
       pheatmap(data,
                show_colnames = F,
                #show_rownames = F,
@@ -413,7 +418,7 @@ LABclassifier <- function(data,dir.path=".",prefix="myClassif",raw.counts=F,log2
                annotation_col = annot.col,
                annotation_colors = annot.colors,
                breaks=seq(-thr,thr,thr*2/100),
-               color=colorRampPalette(c("green","green","green","black","red","red","red"))(100),
+               color=palette,
                clustering_method = "ward.D",
                clustering_distance_cols = "correlation",
                clustering_distance_rows = "correlation"
