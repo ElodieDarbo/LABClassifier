@@ -205,7 +205,7 @@ prepare.data <- function(data,id.type,log2T,raw.counts,PAM50){
 #' @return \code{compute.cutoff.distrib} Returns a numerical cutoff.
 
 
-compute.cutoff.distrib <- function(data,prefix,feature){
+compute.cutoff.distrib <- function(data,prefix,feature,plot=F){
   if (!is.vector(data)){
     data <- data[,feature]
   }
@@ -213,10 +213,13 @@ compute.cutoff.distrib <- function(data,prefix,feature){
   G <- mod$parameters$variance$G
   mu <- data.frame(x=mod$parameters$mean,y=0)
   cutoff <- sum(sort(mod$parameters$mean,decreasing=T)[1:2])/2
-  plot(mod,what="density",data=data,breaks=10)
-  points(mu,pch=17,col="red")
-  abline(v=cutoff,lty=2,col="red")
-  export.plot(paste0("./Output/",prefix,"_distribution_",feature))
+  if (plot){
+    plot(mod,what="density",data=data,breaks=20)
+    points(mu,pch=17,col="red")
+    abline(v=cutoff,lty=2,col="red")
+    export.plot(paste0(prefix,"_distribution_",feature))
+
+  }
   message("The cutoff for ",feature," distribution is: ",round(cutoff,2))
   return(cutoff)
 }
@@ -302,10 +305,15 @@ expression.dotplot <- function(data, predictions,g1,g2,PAM50=F){
   fill.LAB <- c(Her2="pink",MA="pink",LumA="darkblue",LumB="lightblue",Basal="red",unclassified="grey",Luminal="darkblue")
   color.LAB<- color.LAB[names(color.LAB)%in%classes]
   fill.LAB<- fill.LAB[names(fill.LAB)%in%classes]
+
+  labels <- c("MA"="MA    ","Basal"="Basal    ", "Luminal"="Luminal    ", "LumA" = "LumA    ", "LumB" = "LumB    ", "Her2" = "Her2    ", "Basal" = "Basal    ")
+  labels <- labels[names(labels)%in%classes]
+
+
   g <- ggplot(data,aes(x=g1,y=g2)) + theme_bw() +
     labs(x=paste(g1,"expression"),y=paste(g2,"expression")) +
-    scale_colour_manual(values=color.LAB) +
-    scale_fill_manual(values=fill.LAB) +
+    scale_colour_manual(values=color.LAB,labels=labels) +
+    scale_fill_manual(values=fill.LAB,labels=labels) +
     theme(legend.position="top",
           legend.title=element_blank(),
           aspect.ratio = 1
@@ -337,6 +345,9 @@ expression.dotplot <- function(data, predictions,g1,g2,PAM50=F){
 #' diagnostic plots. Default: FALSE
 #' @param sensor.genes,secretor.genes,asc.genes,lsc.genes Vectors: Gene list to compute splits.
 #' If no gene list is given, pre-defined ones are used. Default: NULL
+#' @param genes.for.heatmap A gene symbol vector to be plotted in the heatmap. If NULL,
+#' genes used for splitting estimation are used. Default=NULL
+#' @param colorBlind If set to TRUE, a color palette color blind friendly is used. Default: FALSE
 #' @references
 #' genefu:  Deena M.A. Gendoo et al. (2021). genefu: Computation of Gene
 #' Expression-Based Signatures in Breast Cancer. R package version 2.26.0.
@@ -354,7 +365,7 @@ expression.dotplot <- function(data, predictions,g1,g2,PAM50=F){
 #' LABclassifier(TCGA.rsem,plot=TRUE)
 
 
-LABclassifier <- function(data,dir.path=".",prefix="myClassif",raw.counts=F,log2T=F,id.type="SYMBOL",PAM50=F,plot=T,sensor.genes=NULL,secretor.genes=NULL,asc.genes=NULL,lsc.genes=NULL,colorBlind=F){
+LABclassifier <- function(data,dir.path=".",prefix="myClassif",raw.counts=F,log2T=F,id.type="SYMBOL",PAM50=F,plot=T,sensor.genes=NULL,secretor.genes=NULL,asc.genes=NULL,lsc.genes=NULL,genes.for.heatmap=NULL,colorBlind=F){
   AR_activity <- pred <- NULL
   message("Creating an Output folder in working directory: ",dir.path)
   dir.create(file.path(dir.path,"Output"), recursive = TRUE, showWarnings = FALSE)
@@ -387,7 +398,9 @@ LABclassifier <- function(data,dir.path=".",prefix="myClassif",raw.counts=F,log2
     row.names(LABclass) <- LABclass$Row.names
   }
   pred.final <- LABclass
-
+  cutoff <- compute.cutoff.distrib(LABclass[LABclass$pred!="Basal",],prefix,"AR_activity",plot=T)
+  pred.final$AR_groups <- "low"
+  pred.final$AR_groups[pred.final$AR_activity>=cutoff] <- "high"
   if (plot) {
     message("Creating plots ...")
     w <- 18
@@ -395,14 +408,17 @@ LABclassifier <- function(data,dir.path=".",prefix="myClassif",raw.counts=F,log2
     if (ncol(data)>1){
       annot.col <- pred.final[,c("pred","AR_activity")]
       colnames(annot.col)[1] <- "LABClassif"
+      LABclass$pred <- factor(as.vector(LABclass$pred),levels=c("Luminal","Basal","MA"))
+      LABclass$PAM50 <- factor(as.vector(LABclass$PAM50),levels=c("LumA","LumB","Basal","Normal","Her2")[c("LumA","LumB","Basal","Normal","Her2")%in%LABclass$PAM50])
       annot.colors <- list(LABClassif=c(MA="pink",Basal="red",Luminal="darkblue"), AR_activity = inferno(10, begin = 0, end = 0.8))
       g3 <- expression.dotplot(data, pred.final,"ESR1","FOXA1")
       g5 <- expression.dotplot(data, pred.final,"AR","FOXA1")
       g6 <- expression.dotplot(data, pred.final,"AR","ERBB2")
-      g4 <- ggplot(pred.final,aes(x=AR_activity)) + theme_bw() +
-        geom_density(aes(color=pred)) + geom_rug(aes(color=pred),length = unit(0.1, "npc")) +
-        scale_color_manual(values=c(MA="pink",Basal="red",Luminal="darkblue")) +
-        theme(aspect.ratio = 3/4,legend.title=element_blank(),legend.position = "top")
+      g4 <- ggplot(LABclass,aes(x=AR_activity)) + theme_bw() +
+        geom_density(aes(color=pred,x=AR_activity, y= after_stat(scaled)),show.legend = F) + geom_rug(aes(color=pred),length = unit(0.1, "npc")) +
+        scale_color_manual(values=c(MA="pink",Basal="red",Luminal="darkblue"),labels = c("MA"="MA    ","Basal"="Basal    ", "Luminal"="Luminal    ")) +
+        theme(aspect.ratio = 3/4,legend.title=element_blank(),legend.position = "top") + geom_vline(xintercept = cutoff,linetype="dashed",linewidth=0.4) +
+        geom_point(x=cutoff,y=0,shape=17)
 
       if (PAM50){
         annot.col$PAM50 <- pred.final$PAM50
@@ -410,13 +426,14 @@ LABclassifier <- function(data,dir.path=".",prefix="myClassif",raw.counts=F,log2
         gpam1 <- expression.dotplot(data, pred.final,"ESR1","FOXA1",PAM50=T)
         gpam3 <- expression.dotplot(data, pred.final,"AR","FOXA1",PAM50=T)
         gpam4 <- expression.dotplot(data, pred.final,"AR","ERBB2",PAM50=T)
-        gpam2 <- ggplot(pred.final,aes(x=AR_activity)) + theme_bw() +
-          geom_density(aes(color=PAM50)) + geom_rug(aes(color=PAM50),length = unit(0.1, "npc")) +
-          scale_color_manual(values=c(Her2="pink",Basal="red",LumA="darkblue",LumB="lightblue")) +
+        gpam2 <- ggplot(LABclass[LABclass$PAM50!="Normal",],aes(x=AR_activity)) + theme_bw() +
+          geom_density(aes(color=PAM50, y= after_stat(scaled)),show.legend = F) + geom_rug(aes(color=PAM50),length = unit(0.1, "npc")) +
+          scale_color_manual(values=c(Her2="pink",Basal="red",LumA="darkblue",LumB="lightblue"),labels=c( "LumA" = "LumA    ", "LumB" = "LumB    ", "Her2" = "Her2    ", "Basal" = "Basal    ")) +
           theme(aspect.ratio = 3/4,legend.position = "top",legend.title=element_blank())
         print(multiplot(g3,gpam1,g5,gpam3,g6,gpam4,g4,gpam2,cols=4))
         h <- 8
         export.plot(paste0(prefix,"_LAB_predictions"),width=w,height=h)
+        pred.final$PAM50 <- factor(as.vector(pred.final$PAM50),levels=c("Basal","Normal","LumA","LumB","Her2")[c("Basal","Normal","LumA","LumB","Her2")%in%pred.final$PAM50])
         confusion <- as.data.frame.matrix(table(pred.final$pred,pred.final$PAM50))
         pheatmap(round(confusion[,colnames(confusion)%in%c("Basal","Normal","LumA","LumB","Her2")]),
                  cluster_rows = F,
@@ -431,7 +448,12 @@ LABclassifier <- function(data,dir.path=".",prefix="myClassif",raw.counts=F,log2
        multiplot(g3,g5,g6,g4,cols=4)
        export.plot(paste0(prefix,"_LAB_predictions"),width=w,height=h)
       }
-      data <- data[row.names(data)%in%c(sensor.genes,secretor.genes,asc.genes,lsc.genes),]
+
+      if (!is.null(genes.for.heatmap)){
+        data <- data[row.names(data)%in%genes.for.heatmap,]
+      } else {
+        data <- data[row.names(data)%in%c(sensor.genes,secretor.genes,asc.genes,lsc.genes),]
+      }
       data <- data - apply(data,1,mean)
       thr <- max(abs(data))
       if (colorBlind){
