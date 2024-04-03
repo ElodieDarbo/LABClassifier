@@ -451,8 +451,10 @@ LABclassifier <- function(data,dir.path=".",prefix="myClassif",raw.counts=F,log2
 
       if (!is.null(genes.for.heatmap)){
         data <- data[row.names(data)%in%genes.for.heatmap,]
+        l.genes <- sum(genes.for.heatmap%in%row.names(data))
       } else {
         data <- data[row.names(data)%in%c(sensor.genes,secretor.genes,asc.genes,lsc.genes),]
+        l.genes <- sum(c(sensor.genes,secretor.genes,asc.genes,lsc.genes)%in%row.names(data))
       }
       data <- data - apply(data,1,mean)
       thr <- max(abs(data))
@@ -471,9 +473,10 @@ LABclassifier <- function(data,dir.path=".",prefix="myClassif",raw.counts=F,log2
                color=palette,
                clustering_method = "ward.D",
                clustering_distance_cols = "correlation",
-               clustering_distance_rows = "correlation"
+               clustering_distance_rows = "correlation",
+               fontsize=8
                )
-      export.plot(paste0(prefix,"_LAB_predictions_heatmap"),width=8,height=12)
+      export.plot(paste0(prefix,"_LAB_predictions_heatmap"),width=10,height=l.genes/10)
 
     } else {
       message("A unique sample can't be plotted")
