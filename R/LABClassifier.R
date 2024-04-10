@@ -66,8 +66,14 @@ ssGSEA.classif <- function(num, filename,sensor.genes,secretor.genes,asc.genes,l
 
   gene.split.list <- list(mean.hsc=sensor.genes,mean.msc=secretor.genes,mean.asc=asc.genes,mean.lsc=lsc.genes,RA_activ=RA_genes)
   message("Computing scores ...")
-  all.scores <- gsva(as.matrix(num),gset.idx.list = gene.split.list,method="ssgsea", ssgsea.norm = FALSE, verbose = FALSE)/1000
-
+  test.version <- as.numeric(substring(first=11,last =13 ,text=R.version$version.string))
+  message("You are running on R version: ",test.version)
+  if (test.version<4.3){
+    all.scores <- gsva(as.matrix(num),gset.idx.list = gene.split.list,method="ssgsea", ssgsea.norm = FALSE, verbose = FALSE)/1000
+  }
+  else {
+    all.scores <- gsva(expr = ssgseaParam(exprData=as.matrix(num),geneSets=gene.split.list,normalize=F,verbose=F))/1000
+  }
 
   all.scores <- as.data.frame(t(all.scores))
 
@@ -361,8 +367,16 @@ expression.dotplot <- function(data, predictions,g1,g2,PAM50=F){
 #' @importFrom GSVA gsva
 #' @return A data.frame containing LAB classification
 #' @examples
-#' data(TCGA.rsem)
-#' LABclassifier(TCGA.rsem,plot=TRUE)
+#'\dontrun{
+#' options(timeout=1000)
+#' # dataset is one of all, TCGA, METABRIC, ICGC, EORTC
+#' data <- import.data.zenodo(dataset = "TCGA")
+#' # If the data were already dowloaded, they are stored in "./ext_data" and can
+#' # be accessed using read.table("./ext_data/TCGA_matrix.txt",header=T,row.names=1)
+#' # Test on TCGA data
+#' LABclassifier(data$TCGA,plot=TRUE)
+#'}
+
 
 
 LABclassifier <- function(data,dir.path=".",prefix="myClassif",raw.counts=F,log2T=F,id.type="SYMBOL",PAM50=F,plot=T,sensor.genes=NULL,secretor.genes=NULL,asc.genes=NULL,lsc.genes=NULL,genes.for.heatmap=NULL,colorBlind=F){
@@ -409,7 +423,6 @@ LABclassifier <- function(data,dir.path=".",prefix="myClassif",raw.counts=F,log2
       annot.col <- pred.final[,c("pred","AR_activity")]
       colnames(annot.col)[1] <- "LABClassif"
       LABclass$pred <- factor(as.vector(LABclass$pred),levels=c("Luminal","Basal","MA"))
-      LABclass$PAM50 <- factor(as.vector(LABclass$PAM50),levels=c("LumA","LumB","Basal","Normal","Her2")[c("LumA","LumB","Basal","Normal","Her2")%in%LABclass$PAM50])
       annot.colors <- list(LABClassif=c(MA="pink",Basal="red",Luminal="darkblue"), AR_activity = inferno(10, begin = 0, end = 0.8))
       g3 <- expression.dotplot(data, pred.final,"ESR1","FOXA1")
       g5 <- expression.dotplot(data, pred.final,"AR","FOXA1")
@@ -421,6 +434,7 @@ LABclassifier <- function(data,dir.path=".",prefix="myClassif",raw.counts=F,log2
         geom_point(x=cutoff,y=0,shape=17)
 
       if (PAM50){
+        LABclass$PAM50 <- factor(as.vector(LABclass$PAM50),levels=c("LumA","LumB","Basal","Normal","Her2")[c("LumA","LumB","Basal","Normal","Her2")%in%LABclass$PAM50])
         annot.col$PAM50 <- pred.final$PAM50
         annot.colors$PAM50 <- c(Her2="pink",Basal="red",LumA="darkblue",LumB="lightblue",Normal="grey")
         gpam1 <- expression.dotplot(data, pred.final,"ESR1","FOXA1",PAM50=T)
@@ -453,7 +467,7 @@ LABclassifier <- function(data,dir.path=".",prefix="myClassif",raw.counts=F,log2
         data <- data[row.names(data)%in%genes.for.heatmap,]
         l.genes <- sum(genes.for.heatmap%in%row.names(data))
       } else {
-        data <- data[row.names(data)%in%c(sensor.genes,secretor.genes,asc.genes,lsc.genes),]
+        data <- data[row.names(data)%in%c(sensor.genes,secretor.genes,asc.genes,lsc.genes,RA_genes),]
         l.genes <- sum(c(sensor.genes,secretor.genes,asc.genes,lsc.genes)%in%row.names(data))
       }
       data <- data - apply(data,1,mean)
@@ -476,7 +490,7 @@ LABclassifier <- function(data,dir.path=".",prefix="myClassif",raw.counts=F,log2
                clustering_distance_rows = "correlation",
                fontsize=8
                )
-      export.plot(paste0(prefix,"_LAB_predictions_heatmap"),width=10,height=l.genes/10)
+      export.plot(paste0(prefix,"_LAB_predictions_heatmap"),width=10,height=(l.genes*10)/70)
 
     } else {
       message("A unique sample can't be plotted")
