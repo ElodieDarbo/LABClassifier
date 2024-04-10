@@ -490,7 +490,7 @@ LABclassifier <- function(data,dir.path=".",prefix="myClassif",raw.counts=F,log2
                clustering_distance_rows = "correlation",
                fontsize=8
                )
-      export.plot(paste0(prefix,"_LAB_predictions_heatmap"),width=10,height=(l.genes*10)/70)
+      export.plot(paste0(prefix,"_LAB_predictions_heatmap"),width=10,height=max(c(10,(l.genes*10)/70)))
 
     } else {
       message("A unique sample can't be plotted")
