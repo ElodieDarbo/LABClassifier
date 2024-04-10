@@ -18,7 +18,9 @@ LABclassifier(
   sensor.genes = NULL,
   secretor.genes = NULL,
   asc.genes = NULL,
-  lsc.genes = NULL
+  lsc.genes = NULL,
+  genes.for.heatmap = NULL,
+  colorBlind = F
 )
 }
 \arguments{
@@ -47,6 +49,11 @@ diagnostic plots. Default: FALSE}
 
 \item{sensor.genes, secretor.genes, asc.genes, lsc.genes}{Vectors: Gene list to compute splits.
 If no gene list is given, pre-defined ones are used. Default: NULL}
+
+\item{genes.for.heatmap}{A gene symbol vector to be plotted in the heatmap. If NULL,
+genes used for splitting estimation are used. Default=NULL}
+
+\item{colorBlind}{If set to TRUE, a color palette color blind friendly is used. Default: FALSE}
 }
 \value{
 A data.frame containing LAB classification
@@ -57,8 +64,15 @@ of TFs defining the splits enrichment according to ssGSEA
 \code{LABclassifier} helps in visualising the sample classification
 }
 \examples{
-data(TCGA.rsem)
-LABclassifier(TCGA.rsem,plot=TRUE)
+\dontrun{
+# dataset is a character vector containing one or more dataset identifiers
+from "TCGA", "METABRIC", "ICGC", "EORTC" or "all" if all four datasets are wanted.
+data <- import.data.zenodo(dataset = "TCGA")
+# If the data were already dowloaded, they are stored in "./ext_data" and can
+# be accessed using read.table("./ext_data/TCGA_matrix.txt",header=T,row.names=1)
+# Test on TCGA data
+LABclassifier(data$TCGA,plot=TRUE)
+}
 }
 \references{
 genefu:  Deena M.A. Gendoo et al. (2021). genefu: Computation of Gene

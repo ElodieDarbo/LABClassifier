@@ -207,6 +207,7 @@ prepare.data <- function(data,id.type,log2T,raw.counts,PAM50){
 #' folder
 #' @param feature If data is a data.frame, feature is the column name of interest.
 #' In any case feature will be added to the plot file name
+#' @param plot If TRUE, will plot the distribution of the data and the predicted cutoff
 #' @import mclust
 #' @return \code{compute.cutoff.distrib} Returns a numerical cutoff.
 
@@ -365,11 +366,14 @@ expression.dotplot <- function(data, predictions,g1,g2,PAM50=F){
 #' @import pheatmap
 #' @import viridis
 #' @importFrom GSVA gsva
+#' @import zen4R
+#' @importFrom utils head
+#' @importFrom utils read.table
 #' @return A data.frame containing LAB classification
 #' @examples
 #'\dontrun{
-#' options(timeout=1000)
-#' # dataset is one of all, TCGA, METABRIC, ICGC, EORTC
+#' # dataset is a character vector containing one or more dataset identifiers
+#' from "TCGA", "METABRIC", "ICGC", "EORTC" or "all" if all four datasets are wanted.
 #' data <- import.data.zenodo(dataset = "TCGA")
 #' # If the data were already dowloaded, they are stored in "./ext_data" and can
 #' # be accessed using read.table("./ext_data/TCGA_matrix.txt",header=T,row.names=1)

@@ -20,7 +20,7 @@ import.data.zenodo <- function(dataset="all"){
   }
   for (d in names(data)){
     message("Loading ",d, " ...")
-    tmp <- read.table(data[d],sep="\t",head=T,row=1)
+    tmp <- read.table(data[d],sep="\t",header=T,row.names=1)
     print(head(tmp[,1:3]))
     l[[d]] <- tmp
   }
