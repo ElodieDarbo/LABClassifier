@@ -1,3 +1,33 @@
+import.data.zenodo <- function(dataset="all"){
+  dir.create("ext_data",recursive = T,showWarnings = FALSE)
+  data <- c(EORTC="./ext_data/EORTC_x3p_matrix.txt",ICGC="./ext_data/ICGC_matrix.txt",
+               METABRIC= "./ext_data/METABRIC_matrix.txt", TCGA="./ext_data/TCGA_matrix.txt")
+  if (dataset[1]!="all" & sum(dataset%in%names(data))!=length(dataset)){
+    dataset <- dataset[!dataset%in%names(data)]
+    stop(paste("The dataset(s)",paste(dataset,collapse=" "),"are not part of the available data.\n dataset must contain: all, TCGA, METABRIC, EORTC, ICGC."))
+  }
+  l <- list()
+  if (length(dataset)==1 & dataset == "all"){
+    dataset <- names(data)
+    message(paste(dataset, collapse=", ")," will be dowloaded ...")
+    download_zenodo(doi="10.5281/zenodo.10935179",path="./ext_data",files=basename(data),timeout=1000)
+  }
+  else {
+    dataset <- dataset[dataset%in%names(data)]
+    data <- data[dataset]
+    message(paste(dataset, collapse=", ")," will be dowloaded ...")
+    download_zenodo(doi="10.5281/zenodo.10935179",path="./ext_data",files=basename(data),timeout=1000)
+  }
+  for (d in names(data)){
+    message("Loading ",d, " ...")
+    tmp <- read.table(data[d],sep="\t",head=T,row=1)
+    print(head(tmp[,1:3]))
+    l[[d]] <- tmp
+  }
+  return(l)
+}
+
+
 # Export current plot in different formats and sizes; from Jacques van Helden
 export.plot <- function (file.prefix="PlotExport",
                          export.formats="pdf", # supported: postscript, jpg, png, bmp, pdf
