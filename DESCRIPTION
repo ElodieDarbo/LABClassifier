@@ -10,7 +10,9 @@ Depends: R (>= 4.0),
          pheatmap,
          viridis,
          mclust
-Imports: GSVA
+Imports: 
+    GSVA,
+    zen4R
 Authors@R: 
     c(person(given="Elodie", 
               family="Darbo", 
