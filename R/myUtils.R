@@ -10,13 +10,13 @@ import.data.zenodo <- function(dataset="all"){
   if (length(dataset)==1 & dataset == "all"){
     dataset <- names(data)
     message(paste(dataset, collapse=", ")," will be dowloaded ...")
-    download_zenodo(doi="10.5281/zenodo.10935179",path="./ext_data",files=basename(data),timeout=1000)
+    zen4R::download_zenodo(doi="10.5281/zenodo.10935179",path="./ext_data",files=basename(data),timeout=1000)
   }
   else {
     dataset <- dataset[dataset%in%names(data)]
     data <- data[dataset]
     message(paste(dataset, collapse=", ")," will be dowloaded ...")
-    download_zenodo(doi="10.5281/zenodo.10935179",path="./ext_data",files=basename(data),timeout=1000)
+    zen4R::download_zenodo(doi="10.5281/zenodo.10935179",path="./ext_data",files=basename(data),timeout=1000)
   }
   for (d in names(data)){
     message("Loading ",d, " ...")
