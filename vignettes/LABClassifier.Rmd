@@ -39,11 +39,14 @@ library(LABClassifier)
 
 # Run LABclassifier
 
-Attached to the package, you find a subset of RNA-seq data (RSEM) from TCGA BRCA samples: TCGA.rsem. 
-
 ``` r
-data(TCGA.rsem)
-LABclassifier(TCGA.rsem,plot=TRUE)
+data <- import.data.zenodo(dataset = "TCGA")
+# dataset is a character vector containing one or more dataset identifiers
+# from "TCGA", "METABRIC", "ICGC", "EORTC" or "all" if all four datasets are wanted.
+# If the data were already dowloaded, they are stored in "./ext_data" and can
+# be accessed using read.table("./ext_data/TCGA_matrix.txt",header=T,row.names=1)
+# Test on TCGA data
+LABclassifier(data$TCGA,plot=TRUE)
 ```
 
 
