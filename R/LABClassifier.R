@@ -38,6 +38,46 @@ plot.splits <- function(filename,LP.dat,LA.dat){
 }
 
 
+#' \code{import.data.zenodo} dowloads files from zenodo (doi:10.5281/zenodo.10935179)
+#' and returns a list of data.frame containing expression
+#' values from cohorts that can be used to test the classifier
+#'
+#' @param dataset A character vector containing one or more dataset identifiers
+#' from "TCGA", "METABRIC", "ICGC", "EORTC" or "all" if all four datasets are wanted.
+#' The zenodo files are stored in "./ext_data" once downloaded.
+#' @import zen4R
+#' @importFrom utils head
+#' @importFrom utils read.table
+#' @return A list of data.frames containing gene expression
+
+import.data.zenodo <- function(dataset="all"){
+  dir.create("ext_data",recursive = T,showWarnings = FALSE)
+  data <- c(EORTC="./ext_data/EORTC_x3p_matrix.txt",ICGC="./ext_data/ICGC_matrix.txt",
+            METABRIC= "./ext_data/METABRIC_matrix.txt", TCGA="./ext_data/TCGA_matrix.txt")
+  if (dataset[1]!="all" & sum(dataset%in%names(data))!=length(dataset)){
+    dataset <- dataset[!dataset%in%names(data)]
+    stop(paste("The dataset(s)",paste(dataset,collapse=" "),"are not part of the available data.\n dataset must contain: all, TCGA, METABRIC, EORTC, ICGC."))
+  }
+  l <- list()
+  if (length(dataset)==1 & dataset == "all"){
+    dataset <- names(data)
+    message(paste(dataset, collapse=", ")," will be dowloaded ...")
+    zen4R::download_zenodo(doi="10.5281/zenodo.10935179",path="./ext_data",files=basename(data),timeout=1000)
+  }
+  else {
+    dataset <- dataset[dataset%in%names(data)]
+    data <- data[dataset]
+    message(paste(dataset, collapse=", ")," will be dowloaded ...")
+    zen4R::download_zenodo(doi="10.5281/zenodo.10935179",path="./ext_data",files=basename(data),timeout=1000)
+  }
+  for (d in names(data)){
+    message("Loading ",d, " ...")
+    tmp <- read.table(data[d],sep="\t",header=T,row.names=1)
+    print(head(tmp[,1:3]))
+    l[[d]] <- tmp
+  }
+  return(l)
+}
 
 
 ssGSEA.classif <- function(num, filename,sensor.genes,secretor.genes,asc.genes,lsc.genes) {
