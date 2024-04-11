@@ -107,15 +107,16 @@ ssGSEA.classif <- function(num, filename,sensor.genes,secretor.genes,asc.genes,l
 
   gene.split.list <- list(mean.hsc=sensor.genes,mean.msc=secretor.genes,mean.asc=asc.genes,mean.lsc=lsc.genes,RA_activ=RA_genes)
   message("Computing scores ...")
-  test.version <- as.numeric(substring(first=11,last =13 ,text=R.version$version.string))
-  message("You are running on R version: ",test.version)
-  if (test.version<4.3){
-    all.scores <- gsva(as.matrix(num),gset.idx.list = gene.split.list,method="ssgsea", ssgsea.norm = FALSE, verbose = FALSE)/1000
-  }
-  else {
-    all.scores <- gsva(expr = ssgseaParam(exprData=as.matrix(num),geneSets=gene.split.list,normalize=F,verbose=F))/1000
-  }
+  #test.version <- as.numeric(substring(first=11,last =13 ,text=R.version$version.string))
+  #message("You are running on R version: ",test.version)
+  #if (test.version<4.3){
+  #  all.scores <- gsva(as.matrix(num),gset.idx.list = gene.split.list,method="ssgsea", ssgsea.norm = FALSE, verbose = FALSE)/1000
+  #}
+  #else {
+  #  all.scores <- gsva(expr = ssgseaParam(exprData=as.matrix(num),geneSets=gene.split.list,normalize=F,verbose=F))/1000
+  #}
 
+  all.scores <- gsva(as.matrix(num),gset.idx.list = gene.split.list,method="ssgsea", ssgsea.norm = FALSE, verbose = FALSE)/1000
   all.scores <- as.data.frame(t(all.scores))
 
   LP.dat <- all.scores
@@ -425,6 +426,7 @@ expression.dotplot <- function(data, predictions,g1,g2,PAM50=F){
 
 
 LABclassifier <- function(data,dir.path=".",prefix="myClassif",raw.counts=F,log2T=F,id.type="SYMBOL",PAM50=F,plot=T,sensor.genes=NULL,secretor.genes=NULL,asc.genes=NULL,lsc.genes=NULL,genes.for.heatmap=NULL,colorBlind=F){
+  scaled <- NULL
   AR_activity <- pred <- NULL
   message("Creating an Output folder in working directory: ",dir.path)
   dir.create(file.path(dir.path,"Output"), recursive = TRUE, showWarnings = FALSE)
