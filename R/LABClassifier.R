@@ -45,6 +45,7 @@ plot.splits <- function(filename,LP.dat,LA.dat){
 #' @param dataset A character vector containing one or more dataset identifiers
 #' from "TCGA", "METABRIC", "ICGC", "EORTC" or "all" if all four datasets are wanted.
 #' The zenodo files are stored in "./ext_data" once downloaded.
+#' @export
 #' @import zen4R
 #' @importFrom utils head
 #' @importFrom utils read.table
