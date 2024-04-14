@@ -83,6 +83,7 @@ import.data.zenodo <- function(dataset="all"){
 
 ssGSEA.classif <- function(num, filename,sensor.genes,secretor.genes,asc.genes,lsc.genes) {
   #Use cell identity TFs to find the lumapo/basal (luminal progenitor) split
+  ssgseaParam <- NULL
   sensor <- num[row.names(num)%in%sensor.genes,]
   if (sum(row.names(num)%in%sensor.genes)<length(sensor.genes)){
     message("Sensor genes")
@@ -113,10 +114,10 @@ ssGSEA.classif <- function(num, filename,sensor.genes,secretor.genes,asc.genes,l
   #  all.scores <- gsva(as.matrix(num),gset.idx.list = gene.split.list,method="ssgsea", ssgsea.norm = FALSE, verbose = FALSE)/1000
   #}
   #else {
-  #  all.scores <- gsva(expr = ssgseaParam(exprData=as.matrix(num),geneSets=gene.split.list,normalize=F,verbose=F))/1000
+  all.scores <- gsva(expr = ssgseaParam(exprData=as.matrix(num),geneSets=gene.split.list,normalize=F,verbose=F))/1000
   #}
 
-  all.scores <- gsva(as.matrix(num),gset.idx.list = gene.split.list,method="ssgsea", ssgsea.norm = FALSE, verbose = FALSE)/1000
+  #all.scores <- gsva(as.matrix(num),gset.idx.list = gene.split.list,method="ssgsea", ssgsea.norm = FALSE, verbose = FALSE)/1000
   all.scores <- as.data.frame(t(all.scores))
 
   LP.dat <- all.scores
@@ -408,6 +409,7 @@ expression.dotplot <- function(data, predictions,g1,g2,PAM50=F){
 #' @import pheatmap
 #' @import viridis
 #' @importFrom GSVA gsva
+#' @importFrom GSVA ssgseaParam
 #' @import zen4R
 #' @importFrom utils head
 #' @importFrom utils read.table

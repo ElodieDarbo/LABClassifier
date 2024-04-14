@@ -1,7 +1,7 @@
 Package: LABClassifier
 Title: Luminal-Apocrine-Basal Classifier of Breast Cancer Transcriptomic Data
 Version: 2.0
-Depends: R (>= 4.0),
+Depends: R (>= 4.3),
          grDevices,
          graphics,
          stats
@@ -10,7 +10,7 @@ Imports: ggplot2,
          pheatmap,
          viridis,
          mclust,
-         GSVA (== 1.42.0),
+         GSVA,
          zen4R
 Authors@R: 
     c(person(given="Elodie", 
