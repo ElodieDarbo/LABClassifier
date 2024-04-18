@@ -10,7 +10,7 @@ import.data.zenodo(dataset = "all")
 }
 \arguments{
 \item{dataset}{A character vector containing one or more dataset identifiers
-from "TCGA", "METABRIC", "ICGC", "EORTC" or "all" if all four datasets are wanted.
+from "TCGA", "METABRIC", "ICGC", "EORTC_x3p" or "all" if all four datasets are wanted.
 The zenodo files are stored in "./ext_data" once downloaded.}
 }
 \value{

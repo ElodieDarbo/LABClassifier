@@ -43,7 +43,7 @@ plot.splits <- function(filename,LP.dat,LA.dat){
 #' values from cohorts that can be used to test the classifier
 #'
 #' @param dataset A character vector containing one or more dataset identifiers
-#' from "TCGA", "METABRIC", "ICGC", "EORTC" or "all" if all four datasets are wanted.
+#' from "TCGA", "METABRIC", "ICGC", "EORTC_x3p" or "all" if all four datasets are wanted.
 #' The zenodo files are stored in "./ext_data" once downloaded.
 #' @export
 #' @import zen4R
@@ -53,7 +53,7 @@ plot.splits <- function(filename,LP.dat,LA.dat){
 
 import.data.zenodo <- function(dataset="all"){
   dir.create("ext_data",recursive = T,showWarnings = FALSE)
-  data <- c(EORTC="./ext_data/EORTC_x3p_matrix.txt",ICGC="./ext_data/ICGC_matrix.txt",
+  data <- c(EORTC_x3p="./ext_data/EORTC_x3p_matrix.txt",ICGC="./ext_data/ICGC_matrix.txt",
             METABRIC= "./ext_data/METABRIC_matrix.txt", TCGA="./ext_data/TCGA_matrix.txt")
   if (dataset[1]!="all" & sum(dataset%in%names(data))!=length(dataset)){
     dataset <- dataset[!dataset%in%names(data)]
@@ -83,7 +83,6 @@ import.data.zenodo <- function(dataset="all"){
 
 ssGSEA.classif <- function(num, filename,sensor.genes,secretor.genes,asc.genes,lsc.genes) {
   #Use cell identity TFs to find the lumapo/basal (luminal progenitor) split
-  ssgseaParam <- NULL
   sensor <- num[row.names(num)%in%sensor.genes,]
   if (sum(row.names(num)%in%sensor.genes)<length(sensor.genes)){
     message("Sensor genes")
@@ -114,7 +113,7 @@ ssGSEA.classif <- function(num, filename,sensor.genes,secretor.genes,asc.genes,l
   #  all.scores <- gsva(as.matrix(num),gset.idx.list = gene.split.list,method="ssgsea", ssgsea.norm = FALSE, verbose = FALSE)/1000
   #}
   #else {
-  all.scores <- gsva(expr = ssgseaParam(exprData=as.matrix(num),geneSets=gene.split.list,normalize=F))/1000
+  all.scores <- gsva(expr = GSVA::ssgseaParam(exprData=as.matrix(num),geneSets=gene.split.list,normalize=F))/1000
   #}
 
   #all.scores <- gsva(as.matrix(num),gset.idx.list = gene.split.list,method="ssgsea", ssgsea.norm = FALSE, verbose = FALSE)/1000
@@ -417,12 +416,13 @@ expression.dotplot <- function(data, predictions,g1,g2,PAM50=F){
 #' @examples
 #'\dontrun{
 #' # dataset is a character vector containing one or more dataset identifiers
-#' from "TCGA", "METABRIC", "ICGC", "EORTC" or "all" if all four datasets are wanted.
-#' data <- import.data.zenodo(dataset = "TCGA")
+#' from "TCGA", "METABRIC", "ICGC", "EORTC_x3p" or "all" if all four datasets are wanted.
+#' dataset <- "TCGA"
+#' data <- import.data.zenodo(dataset = dataset)
 #' # If the data were already dowloaded, they are stored in "./ext_data" and can
-#' # be accessed using read.table("./ext_data/TCGA_matrix.txt",header=T,row.names=1)
+#' # be accessed using read.table("./ext_data/paste(dataset,"matrix.txt",sep="_"),header=T,row.names=1)
 #' # Test on TCGA data
-#' LABclassifier(data$TCGA,plot=TRUE)
+#' LABclassifier(data[[dataset]],plot=TRUE)
 #'}
 
 

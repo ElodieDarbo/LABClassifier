@@ -67,7 +67,6 @@ export.plot <- function (file.prefix="PlotExport",
 #' then plot 1 will go in the upper left, 2 will go in the upper right, and
 #' 3 will go all the way across the bottom.
 #' @author http://www.cookbook-r.com/Graphs/Multiple_graphs_on_one_page_%28ggplot2%29/
-#' @export
 #' @import grDevices
 #' @import graphics
 #' @import stats

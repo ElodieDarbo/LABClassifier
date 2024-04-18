@@ -66,12 +66,13 @@ of TFs defining the splits enrichment according to ssGSEA
 \examples{
 \dontrun{
 # dataset is a character vector containing one or more dataset identifiers
-from "TCGA", "METABRIC", "ICGC", "EORTC" or "all" if all four datasets are wanted.
-data <- import.data.zenodo(dataset = "TCGA")
+from "TCGA", "METABRIC", "ICGC", "EORTC_x3p" or "all" if all four datasets are wanted.
+dataset <- "TCGA"
+data <- import.data.zenodo(dataset = dataset)
 # If the data were already dowloaded, they are stored in "./ext_data" and can
-# be accessed using read.table("./ext_data/TCGA_matrix.txt",header=T,row.names=1)
+# be accessed using read.table("./ext_data/paste(dataset,"matrix.txt",sep="_"),header=T,row.names=1)
 # Test on TCGA data
-LABclassifier(data$TCGA,plot=TRUE)
+LABclassifier(data[[dataset]],plot=TRUE)
 }
 }
 \references{
