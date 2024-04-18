@@ -25,7 +25,7 @@ library(LABClassifier)
 ## basic example code
 # Import espression matrices from Zenodo doi:10.5281/zenodo.10935179
 # dataset is a character vector containing one or more dataset identifiers
-from "TCGA", "METABRIC", "ICGC", "EORTC_x3p" or "all" if all four datasets are wanted.
+# from "TCGA", "METABRIC", "ICGC", "EORTC_x3p" or "all" if all four datasets are wanted.
 dataset <- "TCGA"
 data <- import.data.zenodo(dataset = dataset)
 # If the data were already dowloaded, they are stored in "./ext_data" and can
