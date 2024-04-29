@@ -155,7 +155,8 @@ ssGSEA.classif <- function(num, filename,sensor.genes,secretor.genes,asc.genes,l
     LA.dat$classif <- ifelse(lasplit>=0,"Luminal","MA")
 
     message("Plotting classification split steps")
-    plot.splits(filename,LP.dat,LA.dat)
+
+    plot.splits(paste(filename,"ssGSEA_splits",sep="_"),LP.dat,LA.dat)
     clean <- lasplit
     clean.lp <- lpsplit
 
