@@ -428,6 +428,7 @@ expression.dotplot <- function(data, predictions,g1,g2,PAM50=F){
 
 
 LABclassifier <- function(data,dir.path=".",prefix="myClassif",raw.counts=F,log2T=F,id.type="SYMBOL",PAM50=F,plot=T,sensor.genes=NULL,secretor.genes=NULL,asc.genes=NULL,lsc.genes=NULL,genes.for.heatmap=NULL,colorBlind=F){
+  prefix <- paste(prefix,"_ssGSEA_splits",sep="_")
   scaled <- NULL
   AR_activity <- pred <- NULL
   message("Creating an Output folder in working directory: ",dir.path)
