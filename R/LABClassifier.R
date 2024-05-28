@@ -259,7 +259,7 @@ compute.cutoff.distrib <- function(data,prefix,feature,plot=F){
   if (!is.vector(data)){
     data <- data[,feature]
   }
-  mod <- densityMclust(data,plot = F,verbose=F)
+  mod <- densityMclust(data,G=1:3,plot = F,verbose=F)
   G <- mod$parameters$variance$G
   mu <- data.frame(x=mod$parameters$mean,y=0)
   cutoff <- sum(sort(mod$parameters$mean,decreasing=T)[1:2])/2
@@ -431,7 +431,7 @@ expression.dotplot <- function(data, predictions,g1,g2,PAM50=F){
 LABclassifier <- function(data,dir.path=".",prefix="myClassif",raw.counts=F,log2T=F,id.type="SYMBOL",PAM50=F,plot=T,sensor.genes=NULL,secretor.genes=NULL,asc.genes=NULL,lsc.genes=NULL,genes.for.heatmap=NULL,colorBlind=F){
   prefix <- paste(prefix,"_ssGSEA_splits",sep="_")
   scaled <- NULL
-  AR_activity <- pred <- NULL
+  AR_activity <- pred <- AR_groups <- pred.2 <- NULL
   message("Creating an Output folder in working directory: ",dir.path)
   dir.create(file.path(dir.path,"Output"), recursive = TRUE, showWarnings = FALSE)
   prefix <- file.path(dir.path,"Output",prefix)
@@ -478,9 +478,15 @@ LABclassifier <- function(data,dir.path=".",prefix="myClassif",raw.counts=F,log2
       g3 <- expression.dotplot(data, pred.final,"ESR1","FOXA1")
       g5 <- expression.dotplot(data, pred.final,"AR","FOXA1")
       g6 <- expression.dotplot(data, pred.final,"AR","ERBB2")
-      g4 <- ggplot(LABclass,aes(x=AR_activity)) + theme_bw() +
-        geom_density(aes(color=pred,x=AR_activity, y= after_stat(scaled)),show.legend = F) + geom_rug(aes(color=pred),length = unit(0.1, "npc")) +
-        scale_color_manual(values=c(MA="pink",Basal="red",Luminal="darkblue"),labels = c("MA"="MA    ","Basal"="Basal    ", "Luminal"="Luminal    ")) +
+      pred.final$pred.2 <- as.vector(pred.final$pred)
+      pred.final$pred.2[LABclass$pred=="MA" & pred.final$AR_groups=="high"] <- "MA-high"
+      pred.final$pred.2[LABclass$pred=="MA" & pred.final$AR_groups=="low"] <- "MA-low"
+      print(table(pred.final$pred.2))
+      pred.final$pred.2 <- factor(as.vector(pred.final$pred.2),levels=c("Luminal","Basal","MA-high","MA-low"))
+
+      g4 <- ggplot(pred.final,aes(x=AR_activity)) + theme_bw() +
+        geom_density(aes(color=pred.2,x=AR_activity, y= after_stat(scaled)),show.legend = F) + geom_rug(aes(color=pred.2),length = unit(0.1, "npc")) +
+        scale_color_manual(values=c("MA-high"="pink","MA-low"=colours()[496],Basal="red",Luminal="darkblue"),labels = c("MA-high"="MA-high    ","MA-low"="MA-low    ","Basal"="Basal    ", "Luminal"="Luminal    ")) +
         theme(aspect.ratio = 3/4,legend.title=element_blank(),legend.position = "top") + geom_vline(xintercept = cutoff,linetype="dashed",linewidth=0.4) +
         geom_point(x=cutoff,y=0,shape=17)
 
