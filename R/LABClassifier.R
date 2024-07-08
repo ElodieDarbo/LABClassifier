@@ -474,8 +474,8 @@ LABclassifier <- function(data,dir.path=".",prefix="myClassif",raw.counts=F,log2
   }
   pred.final <- LABclass
   cutoff <- compute.cutoff.distrib(LABclass[LABclass$pred!="Basal",],prefix,"AR_activity",plot=T)
-  pred.final$AR_groups <- "MAlo"
-  pred.final$AR_groups[pred.final$AR_activity>=cutoff] <- "MAhi"
+  pred.final$AR_groups <- "low"
+  pred.final$AR_groups[pred.final$AR_activity>=cutoff] <- "high"
   if (plot) {
     message("Creating plots ...")
     w <- 16
@@ -489,14 +489,14 @@ LABclassifier <- function(data,dir.path=".",prefix="myClassif",raw.counts=F,log2
       g5 <- expression.dotplot(data, pred.final,"AR","FOXA1")
       g6 <- expression.dotplot(data, pred.final,"AR","ERBB2")
       pred.final$pred.2 <- as.vector(pred.final$pred)
-      pred.final$pred.2[LABclass$pred=="MA" & pred.final$AR_groups=="high"] <- "MA-high"
-      pred.final$pred.2[LABclass$pred=="MA" & pred.final$AR_groups=="low"] <- "MA-low"
+      pred.final$pred.2[LABclass$pred=="MA" & pred.final$AR_groups=="high"] <- "MAhi"
+      pred.final$pred.2[LABclass$pred=="MA" & pred.final$AR_groups=="low"] <- "MAlo"
       print(table(pred.final$pred.2))
-      pred.final$pred.2 <- factor(as.vector(pred.final$pred.2),levels=c("Luminal","Basal","MA-high","MA-low"))
+      pred.final$pred.2 <- factor(as.vector(pred.final$pred.2),levels=c("Luminal","Basal","MAhi","MAlo"))
 
       g4 <- ggplot(pred.final,aes(x=AR_activity)) + theme_bw() +
         geom_density(aes(color=pred.2,x=AR_activity, y= after_stat(scaled)),show.legend = F,adjust=1.5) + geom_rug(aes(color=pred.2),length = unit(0.1, "npc")) +
-        scale_color_manual(values=c("MA-high"="pink","MA-low"=colours()[496],Basal="red",Luminal="darkblue"),labels = c("MA-high"="MA-high    ","MA-low"="MA-low    ","Basal"="Basal    ", "Luminal"="Luminal    ")) +
+        scale_color_manual(values=c("MAhi"="pink","MAlo"=colours()[496],Basal="red",Luminal="darkblue"),labels = c("MAhi"="MAhi    ","MAlo"="MAlo    ","Basal"="Basal    ", "Luminal"="Luminal    ")) +
         theme(aspect.ratio = 3/4,legend.title=element_blank(),legend.position = "top",
               legend.margin = margin(t = 0, r = 0, b = -10, l = 0), #bring the labels closer
               plot.margin = margin(t = 10, r = 5, b = 5, l = 5)) +
