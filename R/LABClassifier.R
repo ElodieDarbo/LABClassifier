@@ -17,8 +17,13 @@ plot.splits <- function(filename,LP.dat,LA.dat){
     scale_colour_manual(values=c("sensory"="black","secretory"="red")) +
     labs(x="Sensory score",y="Secretory score") +
     coord_cartesian(xlim = c(axis.min,axis.max),ylim=c(axis.min,axis.max)) +
-    ggtitle("All tumours by LP-split TFs") +
-    theme(legend.position = "top",aspect.ratio = 1,legend.title=element_blank())
+    #ggtitle("All tumours by LP-split TFs") +
+    theme(legend.position = "top",
+          aspect.ratio = 1,
+          legend.title=element_blank(),
+          legend.margin = margin(t = 0, r = 0, b = -10, l = 0),
+          plot.margin = margin(t = 10, r = 5, b = 5, l = 5)
+    )
 
   axis.min <- min(LA.dat[,3:4])
   axis.max <- max(LA.dat[,3:4])
@@ -30,8 +35,11 @@ plot.splits <- function(filename,LP.dat,LA.dat){
     scale_fill_manual(values=c("Luminal"="darkblue","MA"="pink")) +
     labs(x="Luminal score",y="Apocrine score") +
     coord_cartesian(xlim = c(axis.min,axis.max),ylim=c(axis.min,axis.max)) +
-    ggtitle("Sensory tumours by ER metagene") +
-    theme(legend.position = "top",aspect.ratio = 1,legend.title=element_blank())
+    #ggtitle("Sensory tumours by ER metagene") +
+    theme(legend.position = "top",aspect.ratio = 1,legend.title=element_blank(),
+          legend.margin = margin(t = 0, r = 0, b = -10, l = 0),
+          plot.margin = margin(t = 10, r = 5, b = 5, l = 5)
+    )
 
   multiplot(g.sp,g.la,cols=2)
   export.plot(filename,width=8,height=5)
@@ -360,13 +368,15 @@ expression.dotplot <- function(data, predictions,g1,g2,PAM50=F){
   labels <- labels[names(labels)%in%classes]
 
 
-  g <- ggplot(data,aes(x=g1,y=g2)) + theme_bw() +
+  g <- ggplot(data,aes(x=g1,y=g2)) + theme_bw(base_size = 12) +
     labs(x=paste(g1,"expression"),y=paste(g2,"expression")) +
     scale_colour_manual(values=color.LAB,labels=labels) +
     scale_fill_manual(values=fill.LAB,labels=labels) +
     theme(legend.position="top",
           legend.title=element_blank(),
-          aspect.ratio = 1
+          aspect.ratio = 1,
+          legend.margin = margin(t = 0, r = 0, b = -10, l = 0),
+          plot.margin = margin(t = 10, r = 5, b = 5, l = 5)
     ) +
     geom_point(aes(color=prediction,fill=prediction),shape=21)
 
@@ -464,12 +474,12 @@ LABclassifier <- function(data,dir.path=".",prefix="myClassif",raw.counts=F,log2
   }
   pred.final <- LABclass
   cutoff <- compute.cutoff.distrib(LABclass[LABclass$pred!="Basal",],prefix,"AR_activity",plot=T)
-  pred.final$AR_groups <- "low"
-  pred.final$AR_groups[pred.final$AR_activity>=cutoff] <- "high"
+  pred.final$AR_groups <- "MAlo"
+  pred.final$AR_groups[pred.final$AR_activity>=cutoff] <- "MAhi"
   if (plot) {
     message("Creating plots ...")
-    w <- 18
-    h <- 4
+    w <- 16
+    h <- 3
     if (ncol(data)>1){
       annot.col <- pred.final[,c("pred","AR_activity")]
       colnames(annot.col)[1] <- "LABClassif"
@@ -485,10 +495,14 @@ LABclassifier <- function(data,dir.path=".",prefix="myClassif",raw.counts=F,log2
       pred.final$pred.2 <- factor(as.vector(pred.final$pred.2),levels=c("Luminal","Basal","MA-high","MA-low"))
 
       g4 <- ggplot(pred.final,aes(x=AR_activity)) + theme_bw() +
-        geom_density(aes(color=pred.2,x=AR_activity, y= after_stat(scaled)),show.legend = F) + geom_rug(aes(color=pred.2),length = unit(0.1, "npc")) +
+        geom_density(aes(color=pred.2,x=AR_activity, y= after_stat(scaled)),show.legend = F,adjust=1.5) + geom_rug(aes(color=pred.2),length = unit(0.1, "npc")) +
         scale_color_manual(values=c("MA-high"="pink","MA-low"=colours()[496],Basal="red",Luminal="darkblue"),labels = c("MA-high"="MA-high    ","MA-low"="MA-low    ","Basal"="Basal    ", "Luminal"="Luminal    ")) +
-        theme(aspect.ratio = 3/4,legend.title=element_blank(),legend.position = "top") + geom_vline(xintercept = cutoff,linetype="dashed",linewidth=0.4) +
-        geom_point(x=cutoff,y=0,shape=17)
+        theme(aspect.ratio = 3/4,legend.title=element_blank(),legend.position = "top",
+              legend.margin = margin(t = 0, r = 0, b = -10, l = 0), #bring the labels closer
+              plot.margin = margin(t = 10, r = 5, b = 5, l = 5)) +
+        geom_vline(xintercept = cutoff,linetype="dashed",linewidth=0.4) +
+        geom_point(x=cutoff,y=0,shape=17) +
+        ylab("Scaled density")
 
       if (PAM50){
         LABclass$PAM50 <- factor(as.vector(LABclass$PAM50),levels=c("LumA","LumB","Basal","Normal","Her2")[c("LumA","LumB","Basal","Normal","Her2")%in%LABclass$PAM50])
@@ -509,11 +523,13 @@ LABclassifier <- function(data,dir.path=".",prefix="myClassif",raw.counts=F,log2
         pheatmap(round(confusion[,colnames(confusion)%in%c("Basal","Normal","LumA","LumB","Her2")]),
                  cluster_rows = F,
                  cluster_cols = F,
+                 fontsize_number = 10,
+                 legend = F,
                  color=colorRampPalette(c("white",colours()[72]))(100),
                  display_numbers = T,
                  number_format = "%.0f"
         )
-        export.plot(paste0(prefix,"_LAB_PAM50_confusion"),width=8,height=6)
+        export.plot(paste0(prefix,"_LAB_PAM50_confusion"),width=4,height=2)
 
       } else {
        multiplot(g3,g5,g6,g4,cols=4)
