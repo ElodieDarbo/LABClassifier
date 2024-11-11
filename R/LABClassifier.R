@@ -122,7 +122,7 @@ ssGSEA.classif <- function(num, filename,sensor.genes,secretor.genes,asc.genes,l
   #}
   #else {
   #all.scores <- gsva(expr = GSVA::ssgseaParam(exprData=as.matrix(num),geneSets=gene.split.list,normalize=F))/1000
-  params <- GSVA::ssgseaParam(exprData=as.matrix(num),geneSets=gene.split.list,normalize=F)
+  params <- GSVA::ssgseaParam(as.matrix(num),geneSets=gene.split.list,normalize=F)
   all.scores <- gsva(expr = params)/1000
   #}
 
