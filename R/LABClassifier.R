@@ -295,12 +295,12 @@ compute.cutoff.distrib <- function(data,prefix,feature,plot=F){
 #' Expression-Based Signatures in Breast Cancer. R package version 2.26.0.
 #' http://www.pmgenomics.ca/bhklab/software/genefu
 #' @importFrom genefu molecular.subtyping
+#' @importFrom genefu pam50.robust
 #' @return \code{PAMgenefu} Returns a data.frame with 1 column
 #' \item{PAM50}{PAM50 classification: LumA and LumB (Luminal A and B), Basal, Her2.}
 
 
 PAMgenefu <- function(data) {
-  data(genefu::pam50.robust)
   annots <- gene.length[gene.length$entrezid%in%pam50.robust$centroids.map$EntrezGene.ID,c("SYMBOL","entrezid")]
   annots <- merge(annots, data, by.x = "SYMBOL",by.y=0)
   annots <- unique(annots)
