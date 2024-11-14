@@ -2,6 +2,8 @@
 
 export(LABclassifier)
 export(import.data.zenodo)
+export(plot_splits)
+import(genefu)
 import(ggplot2)
 import(grDevices)
 import(graphics)

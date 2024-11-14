@@ -7,7 +7,13 @@ rotate.45 <- function(score1,score2){
   return(lp.tf)
 }
 
-plot.splits <- function(filename,LP.dat,LA.dat){
+#' \code{plot_splits} helps visualise splits
+#'
+#' @param filename set the filename prefix for the plot
+#' @param LP.dat,LA.dat are results from the ssGSEA scoring
+#' @export
+
+plot_splits <- function(filename,LP.dat,LA.dat){
   mean.hsc <- mean.msc <- mean.lsc <- mean.asc <- classif <- NULL
   axis.min <- min(LP.dat[,1:2])
   axis.max <- max(LP.dat[,1:2])
@@ -166,7 +172,7 @@ ssGSEA.classif <- function(num, filename,sensor.genes,secretor.genes,asc.genes,l
 
     message("Plotting classification split steps")
 
-    plot.splits(paste(filename,"ssGSEA_splits",sep="_"),LP.dat,LA.dat)
+    plot_splits(paste(filename,"ssGSEA_splits",sep="_"),LP.dat,LA.dat)
     clean <- lasplit
     clean.lp <- lpsplit
 
@@ -295,7 +301,7 @@ compute.cutoff.distrib <- function(data,prefix,feature,plot=F){
 #' Expression-Based Signatures in Breast Cancer. R package version 2.26.0.
 #' http://www.pmgenomics.ca/bhklab/software/genefu
 #' @importFrom genefu molecular.subtyping
-#' @importFrom genefu pam50.robust
+#' @import genefu
 #' @return \code{PAMgenefu} Returns a data.frame with 1 column
 #' \item{PAM50}{PAM50 classification: LumA and LumB (Luminal A and B), Basal, Her2.}
 

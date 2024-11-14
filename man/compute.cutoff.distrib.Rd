@@ -4,7 +4,7 @@
 \alias{compute.cutoff.distrib}
 \title{\code{compute.cutoff.distrib} uses \code{densityMclust} from mclust package.}
 \usage{
-\method{compute}{cutoff.distrib}(data, prefix, feature, plot = F)
+compute.cutoff.distrib(data, prefix, feature, plot = F)
 }
 \arguments{
 \item{data}{Either a data.frame storing in columns the data to evaluate or a
