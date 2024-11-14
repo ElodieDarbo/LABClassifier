@@ -1,5 +1,3 @@
-utils::globalVariables(c("pam50.robust"))
-
 rotate.45 <- function(score1,score2){
   a<-c(0.7,-0.7)
   b<-c(0.7,0.7)
@@ -309,7 +307,7 @@ compute.cutoff.distrib <- function(data,prefix,feature,plot=F){
 
 
 PAMgenefu <- function(data) {
-  data("pam50.robust",package="genefu", envir = environment())
+  #data("pam50.robust",package="genefu", envir = environment())
   annots <- gene.length[gene.length$entrezid%in%pam50.robust$centroids.map$EntrezGene.ID,c("SYMBOL","entrezid")]
   annots <- merge(annots, data, by.x = "SYMBOL",by.y=0)
   annots <- unique(annots)
@@ -320,7 +318,7 @@ PAMgenefu <- function(data) {
   dat <- t(dat)
 
   annots <- annots[,1:2]
-
+  pam50.robust <- pam50.robust
   # Subtype with PAM50
   output <- molecular.subtyping(
     sbt.model="pam50",
