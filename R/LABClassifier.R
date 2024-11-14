@@ -307,7 +307,9 @@ compute.cutoff.distrib <- function(data,prefix,feature,plot=F){
 
 
 PAMgenefu <- function(data) {
-  #data("pam50.robust",package="genefu", envir = environment())
+  if (!exists("pam50.robust", envir = .GlobalEnv)) {
+    data("pam50.robust", package = "genefu", envir = .GlobalEnv)
+  }
   annots <- gene.length[gene.length$entrezid%in%pam50.robust$centroids.map$EntrezGene.ID,c("SYMBOL","entrezid")]
   annots <- merge(annots, data, by.x = "SYMBOL",by.y=0)
   annots <- unique(annots)
@@ -318,7 +320,6 @@ PAMgenefu <- function(data) {
   dat <- t(dat)
 
   annots <- annots[,1:2]
-  pam50.robust <- pam50.robust
   # Subtype with PAM50
   output <- molecular.subtyping(
     sbt.model="pam50",
