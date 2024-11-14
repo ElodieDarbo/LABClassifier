@@ -1,3 +1,5 @@
+utils::globalVariables(c("pam50.robust"))
+
 rotate.45 <- function(score1,score2){
   a<-c(0.7,-0.7)
   b<-c(0.7,0.7)
