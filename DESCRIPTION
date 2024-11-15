@@ -3,13 +3,13 @@ Title: Luminal-Apocrine-Basal Classifier of Breast Cancer Transcriptomic Data
 Version: 2.1
 Depends: R (>= 4.1),
          grDevices,
-         genefu (>= 2.34.0),
          graphics,
          stats
 Imports: 
     ggplot2,
     pheatmap,
     viridis,
+    genefu (>= 2.34.0),
     mclust,
     GSVA (>= 1.50.5)
 Authors@R: 
