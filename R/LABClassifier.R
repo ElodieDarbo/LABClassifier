@@ -60,8 +60,8 @@ plot_splits <- function(filename,LP.dat,LA.dat){
 #' from "TCGA", "METABRIC", "ICGC", "EORTC_x3p" or "all" if all four datasets are wanted.
 #' The zenodo files are stored in "./ext_data" once downloaded.
 #' @export
-#' @import zen4R
 #' @importFrom utils head
+#' @importFrom utils download.file
 #' @importFrom utils read.table
 #' @return A list of data.frames containing gene expression
 
@@ -73,18 +73,23 @@ import.data.zenodo <- function(dataset="all"){
     dataset <- dataset[!dataset%in%names(data)]
     stop(paste("The dataset(s)",paste(dataset,collapse=" "),"are not part of the available data.\n dataset must contain: all, TCGA, METABRIC, EORTC, ICGC."))
   }
-  l <- list()
   if (length(dataset)==1 & dataset == "all"){
     dataset <- names(data)
-    message(paste(dataset, collapse=", ")," will be dowloaded ...")
-    zen4R::download_zenodo(doi="10.5281/zenodo.10935179",path="./ext_data",files=basename(data),timeout=1000)
   }
   else {
     dataset <- dataset[dataset%in%names(data)]
     data <- data[dataset]
-    message(paste(dataset, collapse=", ")," will be dowloaded ...")
-    zen4R::download_zenodo(doi="10.5281/zenodo.10935179",path="./ext_data",files=basename(data),timeout=1000)
   }
+  message(paste(dataset, collapse=", ")," will be dowloaded ...")
+  for (d in data){
+    if (!file.exists(d)){
+      # zen4R::download_zenodo(doi="10.5281/zenodo.10935179",path="./ext_data",files=basename(data),timeout=1000)
+      download.file(file.path("https://zenodo.org/records/10935179/files",basename(d)),destfile = d)
+    } else {
+      message(basename(d), " already downloaded in ext_data folder")
+    }
+  }
+  l <- list()
   for (d in names(data)){
     message("Loading ",d, " ...")
     tmp <- read.table(data[d],sep="\t",header=T,row.names=1)
@@ -308,7 +313,7 @@ compute.cutoff.distrib <- function(data,prefix,feature,plot=F){
 
 PAMgenefu <- function(data) {
   if (!exists("pam50.robust", envir = .GlobalEnv)) {
-    data("pam50.robust", package = "genefu", envir = .GlobalEnv)
+    data("pam50.robust", package = "genefu", envir = environment())
   }
   annots <- gene.length[gene.length$entrezid%in%pam50.robust$centroids.map$EntrezGene.ID,c("SYMBOL","entrezid")]
   annots <- merge(annots, data, by.x = "SYMBOL",by.y=0)
@@ -431,7 +436,6 @@ expression.dotplot <- function(data, predictions,g1,g2,PAM50=F){
 #' @import viridis
 #' @importFrom GSVA gsva
 #' @importFrom GSVA ssgseaParam
-#' @import zen4R
 #' @importFrom utils head
 #' @importFrom utils read.table
 #' @return A data.frame containing LAB classification
