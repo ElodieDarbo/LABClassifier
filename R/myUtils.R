@@ -1,7 +1,3 @@
-.onLoad <- function(libname, pkgname) {
-  utils::data("pam50.robust", package = "genefu", envir = parent.env(environment()))
-}
-
 # Export current plot in different formats and sizes; from Jacques van Helden
 export.plot <- function (file.prefix="PlotExport",
                          export.formats="pdf", # supported: postscript, jpg, png, bmp, pdf

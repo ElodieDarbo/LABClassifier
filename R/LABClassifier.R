@@ -312,9 +312,9 @@ compute.cutoff.distrib <- function(data,prefix,feature,plot=F){
 
 
 PAMgenefu <- function(data) {
-  if (!exists("pam50.robust", envir = .GlobalEnv)) {
-    data("pam50.robust", package = "genefu", envir = environment())
-  }
+  pam50.robust <- get("pam50.robust", envir = as.environment("package:LABClassifier"))
+  print("Available objects:")
+  print(ls(envir = as.environment("package:LABClassifier")))
   annots <- gene.length[gene.length$entrezid%in%pam50.robust$centroids.map$EntrezGene.ID,c("SYMBOL","entrezid")]
   annots <- merge(annots, data, by.x = "SYMBOL",by.y=0)
   annots <- unique(annots)
