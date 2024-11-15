@@ -22,6 +22,7 @@ This is a basic example which shows you how to predict breast cancer subtypes fr
 
 ``` r
 library(LABClassifier)
+# To run the PAM50 prediction the import of PAM50.robust form genefu package is mandatory.
 library(genefu)
 data(pam50.robust)
 ## basic example code
@@ -33,7 +34,7 @@ data <- import.data.zenodo(dataset = dataset)
 # If the data were already dowloaded, they are stored in "./ext_data" and can
 # be accessed using read.table("./ext_data/paste(dataset,"matrix.txt",sep="_"),header=T,row.names=1)
 # Test on TCGA data
-LABclassifier(data[[dataset]],plot=TRUE)
+predictions <- LABclassifier(data[[dataset]],plot=TRUE)
 ```
 
 ## References
