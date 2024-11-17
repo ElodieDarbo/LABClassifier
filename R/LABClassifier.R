@@ -1,3 +1,16 @@
+#' PAM50 Robust Dataset
+#'
+#' This dataset contains the robust centroids used for PAM50 molecular subtyping
+#' from the genefu package.
+#'
+#' @docType data
+#' @usage data(pam50.robust)
+#' @format A list containing robust centroids and associated metadata.
+#' @keywords datasets
+#' @examples
+#' data(pam50.robust)
+"pam50.robust"
+
 rotate.45 <- function(score1,score2){
   a<-c(0.7,-0.7)
   b<-c(0.7,0.7)
@@ -482,8 +495,8 @@ LABclassifier <- function(data,dir.path=".",prefix="myClassif",raw.counts=F,log2
     if (!exists("pam50.robust", envir = .GlobalEnv)) {
       PAM50 <- F
       warning("PAM50 prediction can not be run ...")
-      message("To run PAM50 prediction you need to load the data pam50.robust in your global environnement.\n
-                  Before running the analysis proceed as follow:\n
+      message("pam50.robust not in  your global environnement.
+                  Before running the analysis proceed as follow:
                   data(pam50.robust)")
     }
   }

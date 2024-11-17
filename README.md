@@ -22,9 +22,6 @@ This is a basic example which shows you how to predict breast cancer subtypes fr
 
 ``` r
 library(LABClassifier)
-# To run the PAM50 prediction the import of PAM50.robust form genefu package is mandatory.
-library(genefu)
-data(pam50.robust)
 ## basic example code
 # Import espression matrices from Zenodo doi:10.5281/zenodo.10935179
 # dataset is a character vector containing one or more dataset identifiers
