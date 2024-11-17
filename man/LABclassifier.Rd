@@ -42,7 +42,9 @@ data, then they will be transformed in TPM. Default: FALSE;}
 ensEMBL, entrezID, SYMBOL (default)}
 
 \item{PAM50}{A logical. Compute PAM50 classification using \code{molecular.subtyping}
-function from genefu package. If used, please cite the corresponding paper (See reference).}
+function from genefu package. If used, please cite the corresponding paper (See reference).
+To run this option, the object pam50.robust from genefu package needs to be loaded in your session
+data(pam50.robust)}
 
 \item{plot}{A logical. Set it to TRUE to display classification
 diagnostic plots. Default: FALSE}
@@ -69,10 +71,14 @@ of TFs defining the splits enrichment according to ssGSEA
 from "TCGA", "METABRIC", "ICGC", "EORTC_x3p" or "all" if all four datasets are wanted.
 dataset <- "TCGA"
 data <- import.data.zenodo(dataset = dataset)
-# If the data were already dowloaded, they are stored in "./ext_data" and can
-# be accessed using read.table("./ext_data/paste(dataset,"matrix.txt",sep="_"),header=T,row.names=1)
+# If the data were already dowloaded, they are stored in "./ext_data" and can be accessed using
+# read.table("./ext_data/paste(dataset,"matrix.txt",sep="_"),header=T,row.names=1)
 # Test on TCGA data
-LABclassifier(data[[dataset]],plot=TRUE)
+predictions <- LABclassifier(data[[dataset]],plot=TRUE)
+# If you want to predict subtypes with the PAM50 signature you need to load
+# the pam50.robust data from genefu package in you global environment:
+data(pam50.robust)
+predictions <- LABclassifier(data[[dataset]],plot=TRUE, PAM50=T)
 }
 }
 \references{
