@@ -42,9 +42,7 @@ data, then they will be transformed in TPM. Default: FALSE;}
 ensEMBL, entrezID, SYMBOL (default)}
 
 \item{PAM50}{A logical. Compute PAM50 classification using \code{molecular.subtyping}
-function from genefu package. If used, please cite the corresponding paper (See reference).
-To run this option, the object pam50.robust from genefu package needs to be loaded in your session
-data(pam50.robust)}
+function from genefu package. If used, please cite the corresponding paper (See reference).}
 
 \item{plot}{A logical. Set it to TRUE to display classification
 diagnostic plots. Default: FALSE}
@@ -75,10 +73,6 @@ data <- import.data.zenodo(dataset = dataset)
 # read.table("./ext_data/paste(dataset,"matrix.txt",sep="_"),header=T,row.names=1)
 # Test on TCGA data
 predictions <- LABclassifier(data[[dataset]],plot=TRUE)
-# If you want to predict subtypes with the PAM50 signature you need to load
-# the pam50.robust data from genefu package in you global environment:
-data(pam50.robust)
-predictions <- LABclassifier(data[[dataset]],plot=TRUE, PAM50=T)
 }
 }
 \references{

@@ -1,17 +1,3 @@
-#' PAM50 Robust Dataset
-#'
-#' This dataset contains the robust centroids used for PAM50 molecular subtyping
-#' from the genefu package.
-#'
-#' @docType data
-#' @usage data(pam50.robust)
-#' @format A list containing robust centroids and associated metadata.
-#' @keywords datasets
-#' @examples
-#' data(pam50.robust)
-"pam50.robust"
-
-
 rotate.45 <- function(score1,score2){
   a<-c(0.7,-0.7)
   b<-c(0.7,0.7)
@@ -25,7 +11,6 @@ rotate.45 <- function(score1,score2){
 #'
 #' @param filename set the filename prefix for the plot
 #' @param LP.dat,LA.dat are results from the ssGSEA scoring
-#' @export
 
 plot_splits <- function(filename,LP.dat,LA.dat){
   mean.hsc <- mean.msc <- mean.lsc <- mean.asc <- classif <- NULL
@@ -428,8 +413,6 @@ expression.dotplot <- function(data, predictions,g1,g2,PAM50=F){
 #' ensEMBL, entrezID, SYMBOL (default)
 #' @param PAM50 A logical. Compute PAM50 classification using \code{molecular.subtyping}
 #' function from genefu package. If used, please cite the corresponding paper (See reference).
-#' To run this option, the object pam50.robust from genefu package needs to be loaded in your session
-#' data(pam50.robust)
 #' @param plot A logical. Set it to TRUE to display classification
 #' diagnostic plots. Default: FALSE
 #' @param sensor.genes,secretor.genes,asc.genes,lsc.genes Vectors: Gene list to compute splits.
@@ -463,10 +446,6 @@ expression.dotplot <- function(data, predictions,g1,g2,PAM50=F){
 #' # read.table("./ext_data/paste(dataset,"matrix.txt",sep="_"),header=T,row.names=1)
 #' # Test on TCGA data
 #' predictions <- LABclassifier(data[[dataset]],plot=TRUE)
-#' # If you want to predict subtypes with the PAM50 signature you need to load
-#' # the pam50.robust data from genefu package in you global environment:
-#' data(pam50.robust)
-#' predictions <- LABclassifier(data[[dataset]],plot=TRUE, PAM50=T)
 #'}
 
 
