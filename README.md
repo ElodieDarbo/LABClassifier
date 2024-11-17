@@ -35,6 +35,10 @@ data <- import.data.zenodo(dataset = dataset)
 # be accessed using read.table("./ext_data/paste(dataset,"matrix.txt",sep="_"),header=T,row.names=1)
 # Test on TCGA data
 predictions <- LABclassifier(data[[dataset]],plot=TRUE)
+# If you want to predict subtypes with the PAM50 signature you need to load the pam50.robust data from
+# genefu package in you global environment:
+data(pam50.robust)
+predictions <- LABclassifier(data[[dataset]],plot=TRUE, PAM50=T)
 ```
 
 ## References
