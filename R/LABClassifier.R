@@ -101,9 +101,9 @@ import.data.zenodo <- function(dataset="all"){
     if (!file.exists(d)){
       if (d.names=="transSTART"){
         download.file(file.path("https://zenodo.org/records/12703276/files",basename(d)),destfile = d)
+      } else {
+        download.file(file.path("https://zenodo.org/records/10935179/files",basename(d)),destfile = d)
       }
-      # zen4R::download_zenodo(doi="10.5281/zenodo.10935179",path="./ext_data",files=basename(data),timeout=1000)
-      download.file(file.path("https://zenodo.org/records/10935179/files",basename(d)),destfile = d)
     } else {
       message(basename(d), " already downloaded in ext_data folder")
     }
