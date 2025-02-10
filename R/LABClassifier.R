@@ -64,12 +64,14 @@ plot_splits <- function(filename,LP.dat,LA.dat){
 }
 
 
-#' \code{import.data.zenodo} dowloads files from zenodo (doi:10.5281/zenodo.10935179)
+#' \code{import.data.zenodo} dowloads files from zenodo
+#' (doi:10.5281/zenodo.12703276 and doi:10.5281/zenodo.10935179)
 #' and returns a list of data.frame containing expression
 #' values from cohorts that can be used to test the classifier
 #'
 #' @param dataset A character vector containing one or more dataset identifiers
-#' from "TCGA", "METABRIC", "ICGC", "EORTC_x3p" or "all" if all four datasets are wanted.
+#' from "transSTART" (our study), TCGA", "METABRIC", "ICGC", "EORTC_x3p" or "all"
+#' if all five datasets are wanted.
 #' The zenodo files are stored in "./ext_data" once downloaded.
 #' @export
 #' @importFrom utils head
@@ -80,7 +82,8 @@ plot_splits <- function(filename,LP.dat,LA.dat){
 import.data.zenodo <- function(dataset="all"){
   dir.create("ext_data",recursive = T,showWarnings = FALSE)
   data <- c(EORTC_x3p="./ext_data/EORTC_x3p_matrix.txt",ICGC="./ext_data/ICGC_matrix.txt",
-            METABRIC= "./ext_data/METABRIC_matrix.txt", TCGA="./ext_data/TCGA_matrix.txt")
+            METABRIC= "./ext_data/METABRIC_matrix.txt", TCGA="./ext_data/TCGA_matrix.txt",
+            transSTART="./ext_data/transtart_matrix.txt")
   if (dataset[1]!="all" & sum(dataset%in%names(data))!=length(dataset)){
     dataset <- dataset[!dataset%in%names(data)]
     stop(paste("The dataset(s)",paste(dataset,collapse=" "),"are not part of the available data.\n dataset must contain: all, TCGA, METABRIC, EORTC, ICGC."))
@@ -93,8 +96,12 @@ import.data.zenodo <- function(dataset="all"){
     data <- data[dataset]
   }
   message(paste(dataset, collapse=", ")," will be dowloaded ...")
-  for (d in data){
+  for (d.names in names(data)){
+    d <- data[d.names]
     if (!file.exists(d)){
+      if (d.names=="transSTART"){
+        download.file(file.path("https://zenodo.org/records/12703276/files",basename(d)),destfile = d)
+      }
       # zen4R::download_zenodo(doi="10.5281/zenodo.10935179",path="./ext_data",files=basename(data),timeout=1000)
       download.file(file.path("https://zenodo.org/records/10935179/files",basename(d)),destfile = d)
     } else {
