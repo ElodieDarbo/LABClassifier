@@ -5,7 +5,7 @@
 [![Lifecycle: experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental)
 <!-- badges: end -->
 
-The goal of LABClassifier is to classify breast cancer samples into three subtypes: Luminal, Molecular Apocrine (MA) and Basal. To this end, it uses gene expression (RNA-seq, micro-array, illumina beadchip) of genes being determinant for the sensory/secretory split and Luminal/Apocrine split. We base our hypothesis on cell origin, specialisation and tumorogenesis.
+The goal of the LABClassifier is to classify breast cancer samples into four subtypes: Luminal, Basal, Molecular Apocrine with low expression of AR target genes (MAlo) and Molecular Apocrine with high expression of AR target genes (MAhi). To this end, it uses gene expression (RNA-seq, micro-array, illumina beadchip) of genes being determinant for the sensory/secretory split and Luminal/Apocrine split. We base our hypothesis on cell origin, specialisation and tumorogenesis.
 
 ## Installation
 
